@@ -3,22 +3,23 @@
 @EndUserText.label: 'CDS - Info basica de incidentes'
 @Metadata.ignorePropagatedAnnotations: true
 
-@ObjectModel.usageType:{ serviceQuality: #B,
-                         sizeCategory: #S,
-                         dataClass: #MIXED
-                        }
- @ObjectModel.semanticKey: [ 'IncidentId' ]                       
-//define view entity ZI_INCT_SC
+@ObjectModel.semanticKey: [ 'IncidentId' ]
+//@ObjectModel.usageType:{ serviceQuality: #B,
+//                         sizeCategory: #S,
+//                         dataClass: #MIXED
+//                        }
 
 define root view entity ZI_INCT_SC
   as select from zdt_inct_sc as Incident
-  composition [0..*] of ZI_INCT_H_SC as _Historial
- association [1..1] to zdt_status_sc as _Status on _Status.status_code         = $projection.Status 
- association [1..1] to zdt_priority_sc as _Priority on _Priority.priority_code = $projection.Priority
+ 
+  composition [0..*] of ZI_INCT_H_SC    as _Historial
+ 
+  association [1..1] to zdt_status_sc   as _Status   on _Status.status_code = $projection.Status
+  association [1..1] to zdt_priority_sc as _Priority on _Priority.priority_code = $projection.Priority
 {
-  key inc_uuid              as IncUuid,
-      Incident.status       as Status, 
-      Incident.priority     as Priority,     
+  key inc_uuid                       as IncUuid,
+      Incident.status                as Status,
+      Incident.priority              as Priority,
       Incident.incident_id           as IncidentId,
       Incident.title                 as Title,
       Incident.description           as Description,
