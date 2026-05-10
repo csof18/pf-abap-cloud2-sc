@@ -1,0 +1,141 @@
+managed implementation in class zbp_i_inct_sc unique;
+strict ( 2 );
+with draft;
+define behavior for ZI_INCT_SC alias Incident
+persistent table zdt_inct_sc
+draft table zdt_inctd_sc
+
+lock master
+total etag LastChangedAt
+etag master LocalLastChangedAt
+authorization master ( instance )
+{
+  create ( authorization : global );
+  update;
+  delete;
+  field ( numbering : managed, readonly ) IncUuid;
+
+  //  Campos solo lectura
+  field ( readonly ) IncidentId,
+  Status,
+  ChangedDate,
+  LocalCreatedBy,
+  LocalCreatedAt,
+  LocalLastChangedBy,
+  LocalLastChangedAt,
+  LastChangedAt;
+
+  //  Campos obligatorios
+  field ( mandatory ) Title,
+  Description,
+  Priority;
+
+
+  association _Historial { create; with draft; }
+
+  //  action ( authorization : update ) IncidentId result [1] $self; //ejemplo de video ver si va o no y que valores
+  //action ( features : instance, authorization : update ) accepInc result [1] $self;
+  //  internal action
+  //  validar campos no esten vacios
+  validation validationIncident on save { create; update; }
+
+  //  validar  fechas ChangedDate no puede ser antes que CreationDate
+  validation validateDateRange on save { create; field CreationDate, ChangedDate; }
+  //determination setDate on modify { create; field ChangedDate, CreationDate; }
+
+  // como y en que momento se determinan los valores para los campos
+  determination setIncident on save { create; }
+
+  //  no se puede cambiar incidente a  CO o CL si todavia esta en PE
+  //  incidentes con CN, CO o CL no se puede cambiar el status - > determinacion o validacion?
+  determination setStatus on modify { create; update; }
+
+
+  //  no se pueden registrar incidentes en fechas futuras
+  determine action validateDates { validation validateDateRange; }
+  //  efecto secundario
+
+  //  si se actualiza incidente validar que no se eliminen valores obligatoriso
+  //  si estado cambia a IP se debe asignar un responsable
+
+  //  validar  fechas ChangedDate no puede ser antes que CreationDate
+  //  side effects
+  //  { field CreationDate affects field ChangedDate;
+  //    determine action validateDates executed on field CreationDate, field ChangedDate affects messages;
+  //  }      // es una validacion o un efecto secundario?
+
+
+
+  action ChangeStatus result [1] $self;
+
+  action CloseIncident result [1] $self;
+
+  draft action Resume;
+  draft action Edit;
+  draft action Activate optimized;
+  draft action Discard;
+
+  draft determine action Prepare
+  {
+    validation validationIncident;
+    validation validateDateRange;
+  }
+
+
+  //  Agregando mapeo
+  mapping for zdt_inct_sc
+    {
+      IncUuid            = inc_uuid;
+      Status             = status;
+      Priority           = priority;
+      IncidentId         = incident_id;
+      Title              = title;
+      Description        = description;
+      CreationDate       = creation_date;
+      ChangedDate        = changed_date;
+      LocalCreatedBy     = local_created_by;
+      LocalCreatedAt     = local_created_at;
+      LocalLastChangedBy = local_last_changed_by;
+      LocalLastChangedAt = local_last_changed_at;
+      LastChangedAt      = last_changed_at;
+    }
+}
+
+define behavior for ZI_INCT_H_SC alias IncidentHis
+persistent table zdt_inct_h_sc
+draft table zdt_inctd_h_sc
+
+lock dependent by _Incident
+authorization dependent by _Incident
+//total etag LastChangedAt
+//etag master LocalLastChangedAt
+{
+  update;
+  delete;
+  //  field ( readonly )  IncUuid, HisUuid;
+  field ( numbering : managed, readonly ) HisUuid;
+
+  field ( readonly ) IncUuid,
+  LocalCreatedBy,
+  LocalCreatedAt,
+  LocalLastChangedBy,
+  LocalLastChangedAt,
+  LastChangedAt;
+
+  association _Incident { with draft; }
+
+  mapping for zdt_inct_h_sc
+    {
+      IncUuid            = inc_uuid;
+      HisUuid            = his_uuid;
+      HisId              = his_id;
+      PreviousStatus     = previous_status;
+      NewStatus          = new_status;
+      Text               = text;
+      LocalCreatedBy     = local_created_by;
+      LocalCreatedAt     = local_created_at;
+      LocalLastChangedBy = local_last_changed_by;
+      LocalLastChangedAt = local_last_changed_at;
+      LastChangedAt      = last_changed_at;
+    }
+}

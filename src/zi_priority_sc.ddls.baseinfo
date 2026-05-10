@@ -3,14 +3,10 @@
 {
 "FROM":
 [
-"ZDT_INCT_SC"
+"ZDT_PRIORITY_SC"
 ],
 "ASSOCIATED":
-[
-"ZI_INCT_H_SC",
-"ZI_PRIORITY_SC",
-"ZI_STATUS_SC"
-],
+[],
 "BASE":
 [],
 "ANNO_REF":
