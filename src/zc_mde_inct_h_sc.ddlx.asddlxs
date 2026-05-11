@@ -1,0 +1,39 @@
+@Metadata.layer: #CORE
+
+@UI.headerInfo: { typeName: 'History',
+                  typeNamePlural: 'History',
+                  title: {
+                            value: 'HisId'
+                          }
+                 }
+
+
+@UI.presentationVariant: [{ sortOrder: [{ by: 'HisId',
+                                          direction: #ASC
+                                         }
+                                        ]
+                            }]
+@UI.createHidden: true
+
+annotate entity ZC_DT_INCT_H_SC with
+{
+  @UI.lineItem:       [{ position: 10, importance: #MEDIUM }]
+  @UI.identification: [{ position: 10 }]
+  @UI.selectionField: [{ position: 10 }]
+  HisId;
+
+  @UI.lineItem:       [{ position: 20, importance: #LOW }]
+  @UI.identification: [{ position: 20 }]
+  @UI.selectionField: [{ position: 20 }]
+  PreviousStatus;
+
+  @UI.lineItem:       [{ position: 30, importance: #LOW }]
+  @UI.identification: [{ position: 30 }]
+  @UI.selectionField: [{ position: 30 }]
+  NewStatus;
+
+  @UI.lineItem:       [{ position: 40, importance: #LOW }]
+  @UI.identification: [{ position: 40 }]
+  @UI.selectionField: [{ position: 40 }]
+  Text;
+}

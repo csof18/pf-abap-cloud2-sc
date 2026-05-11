@@ -30,29 +30,57 @@ authorization master ( instance )
   Description,
   Priority;
 
-
+  //  asociacion historial
   association _Historial { create; with draft; }
-
   //  action ( authorization : update ) IncidentId result [1] $self; //ejemplo de video ver si va o no y que valores
   //action ( features : instance, authorization : update ) accepInc result [1] $self;
   //  internal action
+
+  // cambio status
+  //  action ChangeStatus result [1] $self;
+ action ( features : instance, authorization : update ) ChangeStatus parameter ZAE_CHANGE_STATUS_SC result [1] $self;
+
+  //  action CloseIncident result [1] $self;
+  //  side effects
+  side effects
+  {
+    action ChangeStatus affects entity _Historial;
+  }
+
+  //internal action ValidateStatus;
+
   //  validar campos no esten vacios
   validation validationIncident on save { create; update; }
 
   //  validar  fechas ChangedDate no puede ser antes que CreationDate
-  validation validateDateRange on save { create; field CreationDate, ChangedDate; }
+  validation validateDateRange on save { create; update; }
+  //  validation validateDateRange on save { create; field CreationDate, ChangedDate;  update; }
   //determination setDate on modify { create; field ChangedDate, CreationDate; }
 
+  validation validateDateFuture on save { create; update; }
+
+  validation validateStatusChange on save { create; update; field Status; }
+
+  validation validateDeleteIncident on save { delete; }
+
   // como y en que momento se determinan los valores para los campos
-  determination setIncident on save { create; }
+  determination setIncident on modify { create; }
+
+  determination createInitialHistory on save { create; }
+
 
   //  no se puede cambiar incidente a  CO o CL si todavia esta en PE
   //  incidentes con CN, CO o CL no se puede cambiar el status - > determinacion o validacion?
-  determination setStatus on modify { create; update; }
+
+  //  determination setStatus on modify { create; }
+
+  //  determination setStatus on modify { create; update; } ??
 
 
   //  no se pueden registrar incidentes en fechas futuras
-  determine action validateDates { validation validateDateRange; }
+
+  //  determine action validateDates { validation validateDateRange; }
+
   //  efecto secundario
 
   //  si se actualiza incidente validar que no se eliminen valores obligatoriso
@@ -66,10 +94,6 @@ authorization master ( instance )
 
 
 
-  action ChangeStatus result [1] $self;
-
-  action CloseIncident result [1] $self;
-
   draft action Resume;
   draft action Edit;
   draft action Activate optimized;
@@ -79,6 +103,8 @@ authorization master ( instance )
   {
     validation validationIncident;
     validation validateDateRange;
+    validation validateDateFuture;
+    validation validateStatusChange;
   }
 
 
@@ -138,4 +164,5 @@ authorization dependent by _Incident
       LocalLastChangedAt = local_last_changed_at;
       LastChangedAt      = last_changed_at;
     }
+
 }
