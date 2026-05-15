@@ -2,8 +2,8 @@
 @EndUserText.label: 'Projection - Incidents'
 @Metadata.ignorePropagatedAnnotations: true
 @Metadata.allowExtensions: true
-
 @Search.searchable: true
+
 
 define root view entity ZC_DT_INCT_SC
   provider contract transactional_query

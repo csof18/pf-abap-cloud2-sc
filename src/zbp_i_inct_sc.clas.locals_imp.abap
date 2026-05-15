@@ -48,6 +48,13 @@ CLASS lhc_Incident IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD ChangeStatus.
+*  moDIFY ENTITIES OF zi_inct_sc ENTITY Incident
+    MODIFY ENTITIES OF zi_inct_sc  IN LOCAL MODE
+    ENTITY Incident
+    UPDATE FROM VALUE #( FOR key IN keys (
+                                          %tky = key-%tky
+                                          Status = key-%param-NewStatus ) ).
+
   ENDMETHOD.
 
   METHOD setIncident.

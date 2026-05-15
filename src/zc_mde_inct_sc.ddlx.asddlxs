@@ -36,7 +36,8 @@ annotate entity ZC_DT_INCT_SC with
                    dataAction: 'ChangeStatus',
                    label: 'Change Status',
                    position: 80,
-                   importance: #HIGH
+                   importance: #HIGH,
+                   exclude: true        // prueba si funciona app
                  }]
   @UI.identification: [{  
                           type: #FOR_ACTION,

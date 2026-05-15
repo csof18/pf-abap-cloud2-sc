@@ -8,7 +8,8 @@ draft table zdt_inctd_sc
 lock master
 total etag LastChangedAt
 etag master LocalLastChangedAt
-authorization master ( instance )
+authorization master ( global, instance )
+//authorization master ( instance )
 {
   create ( authorization : global );
   update;
@@ -17,7 +18,7 @@ authorization master ( instance )
 
   //  Campos solo lectura
   field ( readonly ) IncidentId,
-  Status,
+//  Status,
   ChangedDate,
   LocalCreatedBy,
   LocalCreatedAt,
@@ -26,19 +27,20 @@ authorization master ( instance )
   LastChangedAt;
 
   //  Campos obligatorios
-  field ( mandatory ) Title,
-  Description,
-  Priority;
+  field ( mandatory ) Title, Description, Priority;
 
   //  asociacion historial
-  association _Historial { create; with draft; }
-  //  action ( authorization : update ) IncidentId result [1] $self; //ejemplo de video ver si va o no y que valores
+  association _Historial { with draft; }
+//  association _Historial { create; with draft; }
+
   //action ( features : instance, authorization : update ) accepInc result [1] $self;
   //  internal action
 
   // cambio status
   //  action ChangeStatus result [1] $self;
  action ( features : instance, authorization : update ) ChangeStatus parameter ZAE_CHANGE_STATUS_SC result [1] $self;
+//comprobacion sobre x campo al tocar el btn de accion definida en el authorization master global e instance, tambien se puede bajar  a nivel instancia
+  //  action ( authorization : update ) ChangeStatus result [1] $self; //ejemplo de video ver si va o no y que valores
 
   //  action CloseIncident result [1] $self;
   //  side effects

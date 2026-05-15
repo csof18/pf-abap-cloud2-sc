@@ -1,4 +1,4 @@
-projection;
+ projection;
 strict ( 2 );
 use draft;
 
@@ -16,7 +16,8 @@ define behavior for ZC_DT_INCT_SC alias Incident
   use action Discard;
   use action Prepare;
 
-  use association _Historial { create; with draft; }
+  use association _Historial { with draft; }
+//  use association _Historial { create; with draft; }
 }
 
 define behavior for ZC_DT_INCT_H_SC alias IncidentHis

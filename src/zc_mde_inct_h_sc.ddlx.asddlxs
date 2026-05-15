@@ -17,10 +17,23 @@
 
 annotate entity ZC_DT_INCT_H_SC with
 {
+@UI.facet: [{  
+                  id: 'History',
+                  type: #LINEITEM_REFERENCE,
+                  label: 'History',
+                  position: 20,
+                  targetElement: '_Incident'
+                }]
+  IncUuid;                    
+
+  @UI.identification: [{ position: 9 }]
+  HisUuid;
+
   @UI.lineItem:       [{ position: 10, importance: #MEDIUM }]
   @UI.identification: [{ position: 10 }]
   @UI.selectionField: [{ position: 10 }]
   HisId;
+
 
   @UI.lineItem:       [{ position: 20, importance: #LOW }]
   @UI.identification: [{ position: 20 }]
