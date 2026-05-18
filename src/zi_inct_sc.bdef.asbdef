@@ -30,8 +30,8 @@ authorization master ( global, instance )
   field ( mandatory ) Title, Description, Priority;
 
   //  asociacion historial
-  association _Historial { with draft; }
-//  association _Historial { create; with draft; }
+//  association _Historial { with draft; }
+  association _Historial { create; with draft; }
 
   //action ( features : instance, authorization : update ) accepInc result [1] $self;
   //  internal action

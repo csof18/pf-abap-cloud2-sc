@@ -65,6 +65,24 @@ CLASS lhc_Incident IMPLEMENTATION.
 
   METHOD ChangeStatus.
 
+*   siguiendo video
+*DATA status_inc TYPE TABLE FOR UPDATE ZI_INCT_SC.
+*
+** lectura de los datos
+*    READ ENTITIES OF zi_inct_sc IN LOCAL MODE
+*    ENTITY Incident
+*     FIELDS ( Status )
+*      WITH CORRESPONDING #( keys )
+*      RESULT DATA(incidents).
+*
+*
+*      LOOP AT incidents ASSIGNING FIELD-SYMBOL(<incident>).
+*      DATA(status_inci) = keys[ KEY  id %tky = <incident>-%tky ]-%param-NewStatus.
+*   APPEND VALUE #( %tky = <incident>-%tky
+*                    )
+*
+*      ENDLOOP.
+***************************************
     MODIFY ENTITIES OF zi_inct_sc  IN LOCAL MODE
       ENTITY Incident
       UPDATE FROM VALUE #( FOR key IN keys (
@@ -96,12 +114,23 @@ CLASS lhc_Incident IMPLEMENTATION.
                                                  CreationDate    = cl_abap_context_info=>get_system_date(  )
                                                  ChangedDate     = cl_abap_context_info=>get_system_date(  )
                                                  ) ).    "maneja la clave tecnica->necesita la clave tencica para identificar los registros afectados
-*WITH VALUE #( FOR key IN keys ( %tky = ls_key-  ) ).    "maneja la clave tecnica->necesita la clave tencica para identificar los registros afectados
   ENDMETHOD.
 
   METHOD createInitialHistory.
 
+    DATA lv_text_ini TYPE string VALUE 'First Incident'.
 
+    MODIFY ENTITIES OF zi_inct_sc IN LOCAL MODE
+    ENTITY Incident CREATE BY \_Historial
+    FROM VALUE #( FOR key IN keys INDEX INTO i ( %tky    = key-%tky
+                                                 %target = VALUE #( ( %cid      = |ID_{ i }|
+                                                                      NewStatus = status_code-status_op
+                                                                      Text      = lv_text_ini
+                                                                      %control  = VALUE #( NewStatus = if_abap_behv=>mk-on
+                                                                                           Text      = if_abap_behv=>mk-on
+                                                                                         )
+                                                                    ) )
+                                               ) ).
   ENDMETHOD.
 
   METHOD validateDateFuture.
