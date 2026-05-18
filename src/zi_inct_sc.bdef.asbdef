@@ -18,7 +18,7 @@ authorization master ( global, instance )
 
   //  Campos solo lectura
   field ( readonly ) IncidentId,
-//  Status,
+  Status,       // validar si va o no este
   ChangedDate,
   LocalCreatedBy,
   LocalCreatedAt,

@@ -1,6 +1,6 @@
 @Metadata.layer: #CORE
 
-@UI.headerInfo: { 
+@UI.headerInfo: {
                   typeName: 'Incident',
                   typeNamePlural: 'Incidents',
                   title: {
@@ -9,7 +9,7 @@
                  }
 
 
-@UI.presentationVariant: [{ sortOrder: [{ 
+@UI.presentationVariant: [{ sortOrder: [{
                                           by: 'IncidentId',
                                           direction: #ASC
                                          }
@@ -18,34 +18,35 @@
 annotate entity ZC_DT_INCT_SC with
 {
 
-  @UI.facet: [{ 
+  @UI.facet: [{
                 id: 'GeneralInformation',
                 type: #IDENTIFICATION_REFERENCE,
                 label: 'General Information',
-                position: 10 
+                position: 10
                },
-               { 
+               {
                   id: 'History',
                   type: #LINEITEM_REFERENCE,
                   label: 'History',
                   position: 20,
                   targetElement: '_Historial'
                 }]
-  @UI.lineItem: [{ 
+  @UI.lineItem: [{
                    type: #FOR_ACTION,
                    dataAction: 'ChangeStatus',
                    label: 'Change Status',
                    position: 80,
-                   importance: #HIGH,
-                   exclude: true        // prueba si funciona app
+                   importance: #HIGH
+                   //exclude: true        // prueba si funciona app
                  }]
-  @UI.identification: [{  
+  @UI.identification: [{
                           type: #FOR_ACTION,
                           dataAction: 'ChangeStatus',
                           label: 'Change Status',
                           position: 80,
                           importance: #HIGH
                       }]
+  @UI.hidden: true
   IncUuid;
 
 
@@ -82,4 +83,19 @@ annotate entity ZC_DT_INCT_SC with
   @UI.identification: [{ position: 70 }]
   @UI.selectionField: [{ position: 50 }]
   ChangedDate;
+
+  @UI.hidden: true
+  LocalCreatedBy;
+
+  @UI.hidden: true
+  LocalCreatedAt;
+
+  @UI.hidden: true
+  LocalLastChangedBy;
+
+  @UI.hidden: true
+  LocalLastChangedAt;
+
+  @UI.hidden: true
+  LastChangedAt;
 }

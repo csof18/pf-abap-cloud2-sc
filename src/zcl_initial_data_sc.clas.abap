@@ -35,7 +35,9 @@ ENDCLASS.
 
 
 
-CLASS zcl_initial_data_sc IMPLEMENTATION.
+CLASS ZCL_INITIAL_DATA_SC IMPLEMENTATION.
+
+
   METHOD if_oo_adt_classrun~main.
     data_incident(  ).
     data_historial(  ).
@@ -43,6 +45,7 @@ CLASS zcl_initial_data_sc IMPLEMENTATION.
     data_priority(  ).
 
   ENDMETHOD.
+
 
   METHOD data_incident.
     TRY.
@@ -80,6 +83,7 @@ CLASS zcl_initial_data_sc IMPLEMENTATION.
                                               ) ).
   ENDMETHOD.
 
+
   METHOD data_historial.
     TRY.
         lv_his_uuid1 = cl_system_uuid=>create_uuid_x16_static( ).
@@ -113,6 +117,7 @@ CLASS zcl_initial_data_sc IMPLEMENTATION.
 
   ENDMETHOD.
 
+
   METHOD data_status.
     DELETE FROM zdt_status_sc.
     MODIFY zdt_status_sc FROM TABLE @( VALUE #( ( status_code           = status_cl
@@ -131,6 +136,7 @@ CLASS zcl_initial_data_sc IMPLEMENTATION.
 
   ENDMETHOD.
 
+
   METHOD data_priority.
     DELETE FROM zdt_priority_sc.
     MODIFY zdt_priority_sc FROM TABLE @( VALUE #(   ( priority_code           = priority_h
@@ -141,7 +147,4 @@ CLASS zcl_initial_data_sc IMPLEMENTATION.
                                                       priority_description    = 'Description Low' ) ) ).
 
   ENDMETHOD.
-
-
-
 ENDCLASS.
