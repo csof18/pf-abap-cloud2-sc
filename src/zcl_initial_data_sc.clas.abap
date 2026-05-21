@@ -12,12 +12,12 @@ CLASS zcl_initial_data_sc DEFINITION
 
   PROTECTED  SECTION.
   PRIVATE SECTION.
-    CONSTANTS: status_op TYPE zdt_status-status_value VALUE 'OP',
-               status_ip TYPE zdt_status-status_value VALUE 'IP',
-               status_pe TYPE zdt_status-status_value VALUE 'PE',
-               status_co TYPE zdt_status-status_value VALUE 'CO',
-               status_cl TYPE zdt_status-status_value VALUE 'CL',
-               status_cn TYPE zdt_status-status_value VALUE 'CN'.
+    CONSTANTS: status_op TYPE zdt_status_sc-status_code VALUE 'OP',
+               status_ip TYPE zdt_status_sc-status_code VALUE 'IP',
+               status_pe TYPE zdt_status_sc-status_code VALUE 'PE',
+               status_co TYPE zdt_status_sc-status_code VALUE 'CO',
+               status_cl TYPE zdt_status_sc-status_code VALUE 'CL',
+               status_cn TYPE zdt_status_sc-status_code VALUE 'CN'.
 
     CONSTANTS: priority_h TYPE zdt_priority_sc-priority_code VALUE 'H',
                priority_m TYPE zdt_priority_sc-priority_code VALUE 'M',
@@ -35,7 +35,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_INITIAL_DATA_SC IMPLEMENTATION.
+CLASS zcl_initial_data_sc IMPLEMENTATION.
 
 
   METHOD if_oo_adt_classrun~main.
@@ -57,6 +57,7 @@ CLASS ZCL_INITIAL_DATA_SC IMPLEMENTATION.
     ENDTRY.
     lv_date = cl_abap_context_info=>get_system_date(  ).
 
+*    DELETE FROM zdt_inct_sc.
     MODIFY zdt_inct_sc FROM TABLE @( VALUE #( ( inc_uuid = lv_uuid1
                                                   incident_id = '00000001'
                                                   status = status_op
@@ -93,6 +94,7 @@ CLASS ZCL_INITIAL_DATA_SC IMPLEMENTATION.
         RETURN.
     ENDTRY.
 
+*    DELETE FROM zdt_inct_h_sc.
     MODIFY zdt_inct_h_sc FROM TABLE @( VALUE #( ( inc_uuid = lv_uuid1
                                                   his_uuid = lv_his_uuid1
                                                   his_id = '00000001'
@@ -119,7 +121,7 @@ CLASS ZCL_INITIAL_DATA_SC IMPLEMENTATION.
 
 
   METHOD data_status.
-    DELETE FROM zdt_status_sc.
+*    DELETE FROM zdt_status_sc.
     MODIFY zdt_status_sc FROM TABLE @( VALUE #( ( status_code           = status_cl
                                                   status_description    = 'Description Closed' )
                                                 ( status_code           = status_op
@@ -138,7 +140,7 @@ CLASS ZCL_INITIAL_DATA_SC IMPLEMENTATION.
 
 
   METHOD data_priority.
-    DELETE FROM zdt_priority_sc.
+*    DELETE FROM zdt_priority_sc.
     MODIFY zdt_priority_sc FROM TABLE @( VALUE #(   ( priority_code           = priority_h
                                                       priority_description    = 'Description High' )
                                                     ( priority_code           = priority_m

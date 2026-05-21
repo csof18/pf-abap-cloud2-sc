@@ -4,12 +4,12 @@ CLASS lhc_Incident DEFINITION INHERITING FROM cl_abap_behavior_handler.
     CONSTANTS:
       BEGIN OF status_code,
 *        open TYPE c LENGTH 1 VALUE
-        status_op TYPE zdt_status-status_value VALUE 'OP',
-        status_ip TYPE zdt_status-status_value VALUE 'IP',
-        status_pe TYPE zdt_status-status_value VALUE 'PE',
-        status_co TYPE zdt_status-status_value VALUE 'CO',
-        status_cl TYPE zdt_status-status_value VALUE 'CL',
-        status_cn TYPE zdt_status-status_value VALUE 'CN',
+        status_op TYPE zdt_status_sc-status_code VALUE 'OP',
+        status_ip TYPE zdt_status_sc-status_code VALUE 'IP',
+        status_pe TYPE zdt_status_sc-status_code VALUE 'PE',
+        status_co TYPE zdt_status_sc-status_code VALUE 'CO',
+        status_cl TYPE zdt_status_sc-status_code VALUE 'CL',
+        status_cn TYPE zdt_status_sc-status_code VALUE 'CN',
       END OF status_code.
 
     METHODS get_instance_features FOR INSTANCE FEATURES
@@ -55,6 +55,23 @@ ENDCLASS.
 CLASS lhc_Incident IMPLEMENTATION.
 
   METHOD get_instance_features.
+
+*  leer la entidad + datos
+    READ ENTITIES OF zi_inct_sc IN LOCAL MODE
+    ENTITY Incident
+    FIELDS ( Status )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(incidents)            "recuperar todos los incidentes
+      FAILED failed.                     "posibles fallos se puede declarar una variable, aunque no es necesario en este caso porque tiene failed
+
+    result = VALUE #( FOR incident IN incidents ( %tky    = incident-%tky
+                                                  %field-Status = COND #( WHEN incident-Status = status_code-status_cn
+                                                                            OR incident-Status = status_code-status_co
+                                                                            OR incident-Status = status_code-status_cl
+                                                                          THEN if_abap_behv=>fc-f-read_only
+                                                                          ELSE if_abap_behv=>fc-f-unrestricted )
+                                                   ) ).       "devolver tab interna con vlaor del estado
+
   ENDMETHOD.
 
   METHOD get_instance_authorizations.
@@ -83,11 +100,58 @@ CLASS lhc_Incident IMPLEMENTATION.
 *
 *      ENDLOOP.
 ***************************************
-    MODIFY ENTITIES OF zi_inct_sc  IN LOCAL MODE
-      ENTITY Incident
-      UPDATE FROM VALUE #( FOR key IN keys (
-                                            %tky = key-%tky
-                                            Status = key-%param-NewStatus ) ).
+
+*****************CAMBIA EL ESTADO DE INCIDENTES NO DE HISTORIAL, NO SE VE EL TEXTO NOSE SI SIRVE***********************
+
+* definir una tabla para tratar siempre los multiples registros que se pueden solicitar
+    DATA status_for_update TYPE TABLE FOR UPDATE zi_inct_sc.
+
+
+*status_for_update[ 1 ]
+* lectura de datos para recuperar la informacion que se quiere modificar
+    READ ENTITIES OF zi_inct_sc IN LOCAL MODE
+    ENTITY Incident
+    FIELDS ( Status )
+    WITH CORRESPONDING #( keys )
+    RESULT DATA(incidents).
+
+* prueba de video
+*    DATA status_prob TYPE zdt_status_sc-status_code.
+
+    LOOP AT incidents ASSIGNING FIELD-SYMBOL(<incident>).
+      DATA(new_status) = keys[ KEY id %tky = <incident>-%tky ]-%param-NewStatus.
+*      DATA(new_text_status) = keys[ KEY id %tky = <incident>-%tky ]-%param-Observation.
+
+      APPEND VALUE #( %tky   = <incident>-%tky
+                      status = new_status
+                     ) TO status_for_update.
+
+    ENDLOOP.
+
+    MODIFY ENTITIES OF zi_inct_sc IN LOCAL MODE
+    ENTITY Incident
+    UPDATE FIELDS ( Status )
+    WITH status_for_update.
+
+
+    READ ENTITIES OF zi_inct_sc IN LOCAL MODE
+    ENTITY Incident
+    ALL FIELDS WITH CORRESPONDING #( keys )
+    RESULT DATA(inc_status).
+
+    result = VALUE #( FOR incident IN inc_status ( %tky  = incident-%tky
+                                                   %param = incident ) ).
+
+*****************CAMBIA EL ESTADO DE INCIDENTES NO DE HISTORIAL, NO SE VE EL TEXTO NOSE SI SIRVE***********************
+
+
+
+
+*    MODIFY ENTITIES OF zi_inct_sc  IN LOCAL MODE
+*      ENTITY Incident
+*      UPDATE FROM VALUE #( FOR key IN keys (
+*                                            %tky = key-%tky
+*                                            Status = key-%param-NewStatus ) ).
 
   ENDMETHOD.
 

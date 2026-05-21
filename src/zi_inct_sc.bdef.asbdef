@@ -18,7 +18,7 @@ authorization master ( global, instance )
 
   //  Campos solo lectura
   field ( readonly ) IncidentId,
-  Status,       // validar si va o no este
+  //  Status,       // validar si va o no este
   ChangedDate,
   LocalCreatedBy,
   LocalCreatedAt,
@@ -28,9 +28,12 @@ authorization master ( global, instance )
 
   //  Campos obligatorios
   field ( mandatory ) Title, Description, Priority;
+  //validar si realmente deberia tener esto video accion con parametros
+  field ( features : instance ) Status;
+  //validar si realmente deberia tener esto video accion con parametros
 
   //  asociacion historial
-//  association _Historial { with draft; }
+  //  association _Historial { with draft; }
   association _Historial { create; with draft; }
 
   //action ( features : instance, authorization : update ) accepInc result [1] $self;
@@ -38,8 +41,8 @@ authorization master ( global, instance )
 
   // cambio status
   //  action ChangeStatus result [1] $self;
- action ( features : instance, authorization : update ) ChangeStatus parameter ZAE_CHANGE_STATUS_SC result [1] $self;
-//comprobacion sobre x campo al tocar el btn de accion definida en el authorization master global e instance, tambien se puede bajar  a nivel instancia
+  action ( features : instance, authorization : update ) ChangeStatus parameter ZAE_CHANGE_STATUS_SC result [1] $self;
+  //comprobacion sobre x campo al tocar el btn de accion definida en el authorization master global e instance, tambien se puede bajar  a nivel instancia
   //  action ( authorization : update ) ChangeStatus result [1] $self; //ejemplo de video ver si va o no y que valores
 
   //  action CloseIncident result [1] $self;
