@@ -27,7 +27,8 @@ authorization master ( global, instance )
   LastChangedAt;
 
   //  Campos obligatorios
-  field ( mandatory ) Title, Description, Priority;
+  field ( mandatory ) Title, Description, Priority, Status, CreationDate;
+//  field ( mandatory ) Title, Description, Priority;
   //validar si realmente deberia tener esto video accion con parametros
   field ( features : instance ) Status;
   //validar si realmente deberia tener esto video accion con parametros
@@ -55,6 +56,7 @@ authorization master ( global, instance )
   //internal action ValidateStatus;
 
   //  validar campos no esten vacios
+  validation validationStatus on save { create; field Status; }
   validation validationIncident on save { create; update; }
 
   //  validar  fechas ChangedDate no puede ser antes que CreationDate
@@ -110,6 +112,7 @@ authorization master ( global, instance )
     validation validateDateRange;
     validation validateDateFuture;
     validation validateStatusChange;
+    validation validationStatus;
   }
 
 

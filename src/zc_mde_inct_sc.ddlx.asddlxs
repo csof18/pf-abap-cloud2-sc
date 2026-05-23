@@ -56,7 +56,7 @@ annotate entity ZC_DT_INCT_SC with
   IncidentId;
 
   @UI.lineItem:       [{ position: 20, importance: #LOW }]
-  @UI.identification: [{ position: 20 }]
+  @UI.identification: [{ position: 20 }]   
   Title;
 
 
@@ -67,6 +67,9 @@ annotate entity ZC_DT_INCT_SC with
   @UI.lineItem:       [{ position: 40, importance: #LOW }]
   @UI.identification: [{ position: 40 }]
   @UI.selectionField: [{ position: 20 }]
+//  @Consumption.valueHelpDefinition: [{ entity: { name: 'zdt_inct_sc',     //averiguar que valor iria aca  
+//                                                 element: 'Status' },
+//                                       useForValidation: true }]
   Status;
 
   @UI.lineItem:       [{ position: 50, importance: #LOW }]
