@@ -34,9 +34,12 @@ define root view entity ZC_DT_INCT_SC
       Description,
 
       @Search.ranking: #LOW
+      @EndUserText.label: 'Fecha de creacion'
       CreationDate,
       
+      @Search.defaultSearchElement: true
       @Search.ranking: #LOW
+      @EndUserText.label: 'Fecha de modificacion'
       ChangedDate,
 
       @Search.ranking: #LOW
