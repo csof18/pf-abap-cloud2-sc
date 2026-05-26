@@ -58,7 +58,8 @@ authorization master ( global, instance )
   validation validationPriorityCode on save { create; update; field Priority; }
 
   //  validar  rango de fechas
-  validation validateDateRange on save { create; update; field CreationDate, ChangedDate; }
+//  validation validateDateRange on save { create; update; field CreationDate, ChangedDate; }
+  validation validateDateRange on save { create; field CreationDate, ChangedDate; }
 
   validation validateDateFuture on save { create; update; field CreationDate, ChangedDate; }
   //  validation validateDateFuture on save { create; update; }

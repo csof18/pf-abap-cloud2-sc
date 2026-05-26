@@ -1,5 +1,4 @@
 @Metadata.layer: #CORE
-
 @UI.headerInfo: {
                   typeName: 'Incident',
                   typeNamePlural: 'Incidents',
@@ -73,8 +72,9 @@ annotate entity ZC_DT_INCT_SC with
   @UI.identification: [{ position: 50 }]
   @UI.selectionField: [{ position: 30 }]
   @Consumption.valueHelpDefinition: [{ entity: { name: 'ZI_PRIORITY_SC',     //averiguar que valor iria aca
-                                                 element: 'PriorityCode' },
-                                       useForValidation: true }]
+                                                 element: 'PriorityCode' } //,
+//                                       useForValidation: true 
+}]
   Priority;
 
   @UI.lineItem:       [{ position: 60, importance: #LOW }]
