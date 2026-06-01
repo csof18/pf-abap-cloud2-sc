@@ -1,4 +1,7 @@
 @EndUserText.label: 'Service definition Incident'
-define service ZSD_INCT_SC {
-  expose ZC_DT_INCT_SC as Incidents;
+@ObjectModel: { leadingEntity: { name: 'ZC_DT_INCT_SC' } }
+define service ZSD_INCT_SC
+  provider contracts odata_v4_ui {
+  expose ZC_DT_INCT_SC   as Incidents;
+  expose ZC_DT_INCT_H_SC as History;
 }

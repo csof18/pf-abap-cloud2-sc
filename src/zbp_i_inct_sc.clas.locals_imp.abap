@@ -3,7 +3,6 @@ CLASS lhc_Incident DEFINITION INHERITING FROM cl_abap_behavior_handler.
 
     CONSTANTS:
       BEGIN OF status_code,
-*        open TYPE c LENGTH 1 VALUE
         status_op TYPE zdt_status_sc-status_code VALUE 'OP',
         status_ip TYPE zdt_status_sc-status_code VALUE 'IP',
         status_pe TYPE zdt_status_sc-status_code VALUE 'PE',
@@ -57,21 +56,23 @@ CLASS lhc_Incident DEFINITION INHERITING FROM cl_abap_behavior_handler.
 
     METHODS validationStatus FOR VALIDATE ON SAVE
       IMPORTING keys FOR Incident~validationStatus.
+
     METHODS validationPriorityCode FOR VALIDATE ON SAVE
       IMPORTING keys FOR Incident~validationPriorityCode.
 
-
-* probando de crear un metodo nuevo
     METHODS get_next_incident_id
       RETURNING VALUE(rv_incident_id) TYPE zdt_inct_sc-incident_id.
+
+    METHODS get_next_history_id
+      RETURNING VALUE(rv_history_id) TYPE zdt_inct_h_sc-his_id.
 
 ENDCLASS.
 
 CLASS lhc_Incident IMPLEMENTATION.
 
   METHOD get_instance_features.
-
-    DATA(lv_user) = cl_abap_context_info=>get_user_technical_name(  ).
+*   controlar dinamicamente que hace cada cosa segun el estado de cada registro.
+*    DATA(lv_user) = cl_abap_context_info=>get_user_technical_name(  ).
 *  leer la entidad + datos
     READ ENTITIES OF zi_inct_sc IN LOCAL MODE
     ENTITY Incident
@@ -95,9 +96,7 @@ CLASS lhc_Incident IMPLEMENTATION.
 **PROBAR SI VA O NO
 *   configuracion comportamiento dinamico po instancia
     result = VALUE #( FOR incident IN incidents ( %tky          = incident-%tky
-                                                  %action-ChangeStatus = COND #( "WHEN lv_user EQ gc_admin_user
-                                                                                 "THEN if_abap_behv=>fc-o-disabled
-                                                                                WHEN incident-%is_draft = if_abap_behv=>mk-on
+                                                  %action-ChangeStatus = COND #( WHEN incident-%is_draft = if_abap_behv=>mk-on
                                                                                  THEN if_abap_behv=>fc-o-disabled
                                                                                  WHEN incident-Status = status_code-status_cn
                                                                                    OR incident-Status = status_code-status_co
@@ -107,37 +106,21 @@ CLASS lhc_Incident IMPLEMENTATION.
                                                                                  ELSE if_abap_behv=>fc-o-enabled )
                                                   ) ).
 
-*                                                  %field-Status = COND #( WHEN incident-Status = status_code-status_cn
-*                                                                            OR incident-Status = status_code-status_co
-*                                                                            OR incident-Status = status_code-status_cl
-*                                                                          THEN if_abap_behv=>fc-f-read_only
-*                                                                          ELSE if_abap_behv=>fc-f-unrestricted )
-
-*                                                  %action-ChangeStatus = COND #( WHEN incident-%is_draft = if_abap_behv=>mk-on
-*                                                                                 THEN if_abap_behv=>fc-o-disabled
-*                                                  %action-ChangeStatus = COND #( WHEN incident-Status = status_code-status_pe          "para hacer que algo (en este caso btn) se vea o no
-*                                                                                 THEN if_abap_behv=>fc-o-disabled
-*                                                                                 ELSE if_abap_behv=>fc-o-enabled )
-*                                                   ) ).       "devolver tab interna con vlaor del estado
-
   ENDMETHOD.
 
   METHOD get_instance_authorizations.
 *   usuario logeado
-    DATA(lv_user) = cl_abap_context_info=>get_user_technical_name(  ).
-
-    DATA delete_requested TYPE abap_boolean.
-
+*    DATA(lv_user) = cl_abap_context_info=>get_user_technical_name(  ).
     DATA(update_requested) = COND #( WHEN requested_authorizations-%update = if_abap_behv=>mk-on
                                        OR requested_authorizations-%action-Edit = if_abap_behv=>mk-on
                                      THEN abap_true
                                      ELSE abap_false ).
-    delete_requested = COND #( WHEN requested_authorizations-%delete = if_abap_behv=>mk-on
-                               THEN abap_true
-                               ELSE abap_false ).
+    DATA(delete_requested) = COND #( WHEN requested_authorizations-%delete = if_abap_behv=>mk-on
+                                     THEN abap_true
+                                     ELSE abap_false ).
 
     CHECK update_requested = abap_true
-    OR delete_requested = abap_true.
+       OR delete_requested = abap_true.
 
     READ ENTITIES OF zi_inct_sc IN LOCAL MODE
     ENTITY Incident
@@ -146,109 +129,28 @@ CLASS lhc_Incident IMPLEMENTATION.
     RESULT DATA(incidents)
     FAILED failed.
 
-    result = VALUE #( FOR incident IN incidents ( %tky = incident-%tky
-                                                   %delete = COND #( WHEN incident-Status = status_code-status_op
-                                                                     THEN if_abap_behv=>auth-allowed
-                                                                     ELSE if_abap_behv=>auth-unauthorized
-                                                                    )
-                                                   %action-Edit = COND #( WHEN incident-Status = status_code-status_op
-                                                                     THEN if_abap_behv=>auth-allowed
-                                                                     ELSE if_abap_behv=>auth-unauthorized
-                                                                    )
+    result = VALUE #( FOR incident IN incidents (  %tky         = incident-%tky
+                                                   %update      = if_abap_behv=>auth-allowed
+                                                   %delete      = COND #( WHEN incident-Status = status_code-status_op
+                                                                          THEN if_abap_behv=>auth-allowed
+                                                                          ELSE if_abap_behv=>auth-unauthorized
+                                                                        )
+*                                                   %action-Edit = COND #( WHEN incident-Status = status_code-status_op
+*                                                                          THEN if_abap_behv=>auth-allowed
+*                                                                          ELSE if_abap_behv=>auth-unauthorized
+*                                                                        )
                                                  ) ).
-****  definir permisos por registro
-****
-****    DATA: update_requested TYPE abap_boolean,
-****          update_granted   TYPE abap_boolean,
-****          delete_requested TYPE abap_boolean,
-****          delete_granted   TYPE abap_boolean.
-****
-****    READ ENTITIES OF zi_inct_sc IN LOCAL MODE
-****    ENTITY Incident
-****    FIELDS ( Status )
-****    WITH CORRESPONDING #( keys )
-****    RESULT DATA(incidents)
-****    FAILED failed.
-****
-****   determina si se solicito o no una operacion de actualizacion
-****    update_requested = COND #( WHEN requested_authorizations-%update = if_abap_behv=>mk-on
-****                                 OR requested_authorizations-%action-Edit = if_abap_behv=>mk-on
-****                                 THEN abap_true
-****                                 ELSE abap_false ).
-****
-****   determina si se solicito o no una operacion de eliminacion
-****    delete_requested = COND #( WHEN requested_authorizations-%delete = if_abap_behv=>mk-on
-****                                 OR requested_authorizations-%action-Edit = if_abap_behv=>mk-on
-****                                 THEN abap_true
-****                                 ELSE abap_false ).
-****
-****
-****     si es verdadero seguir sino no continua
-****    CHECK update_requested EQ abap_true.
-****
-****    DATA(lv_technical_name) = cl_abap_context_info=>get_user_technical_name(  ).
-****    DATA user TYPE string VALUE 'CB9980007116'.
-****
-****   si se tiene el codigo de el campo al que se quiere bloquear el acceso
-****    LOOP AT incidents INTO DATA(incident)
-****    WHERE Status IS NOT INITIAL.
-****      IF lv_technical_name EQ user AND incident-Status EQ status_code-status_op.
-*****        para validar de eliminacion y de edicion agregar datos una forma de unificar las 2 validaciones
-****        update_granted = delete_granted = abap_true.
-****
-****      ELSE.
-****        update_granted = delete_granted = abap_false.
-****      ENDIF.
-****
-**** solo si el status es OP se puede eliminar sino no
-****      IF lv_technical_name EQ user AND incident-Status EQ status_code-status_op.
-****        delete_granted = abap_true.
-****        update_granted = abap_true.
-****
-****      ELSE.
-****        delete_granted = abap_false.
-****        update_granted = abap_true.
-****      ENDIF.
-****      IF lv_technical_name EQ user AND incident-Priority NE 'M'.
-****        update_granted = abap_true.
-****
-****      ELSE.
-****        update_granted = abap_false.
-****      ENDIF.
-****
-****   agregar registros en el result  ----  indicar el registro para que el framework determine si permite o no el acceso a la operacion de actualizacion
-****
-****      APPEND VALUE #( LET upd_auth = COND #( WHEN update_granted EQ abap_true       "declarar una var dentro del mismo registro
-****                                             THEN if_abap_behv=>auth-allowed        "tiene valor permitido o no
-****                                             ELSE if_abap_behv=>auth-unauthorized
-****                                             )
-****                          del_auth = COND #( WHEN delete_granted EQ abap_true       "declarar una var dentro del mismo registro
-****                                             THEN if_abap_behv=>auth-allowed        "tiene valor permitido o no
-****                                             ELSE if_abap_behv=>auth-unauthorized
-****                                             )
-****                         IN %tky         = incident-%tky             " el let declarado arriba tiene que ir con un IN
-****                            %update      = upd_auth
-****                            %action-Edit = upd_auth
-****                            %delete      = del_auth ) TO result.   "asignar al componente que se agrega en la tabla interna que se devuelve
-****
-****      APPEND VALUE #( LET upd_auth = COND #( WHEN update_granted EQ abap_true       "declarar una var dentro del mismo registro
-****                                             THEN if_abap_behv=>auth-allowed        "tiene valor permitido o no
-****                                             ELSE if_abap_behv=>auth-unauthorized
-****                                             )
-****                         IN %tky         = incident-%tky             " el let declarado arriba tiene que ir con un IN
-****                            %update      = upd_auth
-****                            %action-Edit = upd_auth
-****                            %delete      = '' ) TO result.   "asignar al componente que se agrega en la tabla interna que se devuelve
-****
-****
-****    ENDLOOP.
-****
-****
-****
-
-
-
-
+*    result = VALUE #( FOR incident IN incidents (  %tky         = incident-%tky
+*                                                   %update      = if_abap_behv=>auth-allowed
+*                                                   %delete      = COND #( WHEN incident-Status = status_code-status_op
+*                                                                          THEN if_abap_behv=>auth-allowed
+*                                                                          ELSE if_abap_behv=>auth-unauthorized
+*                                                                        )
+*                                                   %action-Edit = COND #( WHEN incident-Status = status_code-status_op
+*                                                                          THEN if_abap_behv=>auth-allowed
+*                                                                          ELSE if_abap_behv=>auth-unauthorized
+*                                                                        )
+*                                                 ) ).
   ENDMETHOD.
 
   METHOD get_global_authorizations.
@@ -256,7 +158,7 @@ CLASS lhc_Incident IMPLEMENTATION.
 *   usuario logeado
     DATA(lv_user) = cl_abap_context_info=>get_user_technical_name(  ).
 
-    DATA(lv_auth) = COND abp_behv_auth(  WHEN lv_user = gc_admin_user
+    DATA(lv_auth) = COND abp_behv_auth(  WHEN lv_user IS NOT INITIAL
                                          "WHEN lv_user = gc_admin_no_user
                                          THEN if_abap_behv=>auth-allowed
                                          ELSE if_abap_behv=>auth-unauthorized ).
@@ -265,91 +167,47 @@ CLASS lhc_Incident IMPLEMENTATION.
 *   crear incidente -> permitir o no que x usuario pueda crear un nuevo incidente
     IF requested_authorizations-%create EQ if_abap_behv=>mk-on.  "Si se solicito la opreacion de creat - mk si se marco o no
       result-%create = lv_auth.
-*result-%create = COND #( WHEN lv_user = gc_admin_no_user
-*                         THEN if_abap_behv=>auth-allowed
-*                         ELSE if_abap_behv=>auth-unauthorized ).
-
-
-**      IF  requested_authorizations-%create EQ user.    "si el usuario que solicito la accion es = a valor
-*      IF  lv_user EQ user.    "si el usuario que solicito la accion es = a valor
-*
-*        result-%create = if_abap_behv=>auth-unauthorized.  "asi mi usuario si puede crear
-*
-*      ELSE.
-*        result-%create = if_abap_behv=>auth-allowed.
-*      ENDIF.
     ENDIF.
 
-    IF requested_authorizations-%update EQ if_abap_behv=>mk-on OR
-     requested_authorizations-%action-Edit EQ if_abap_behv=>mk-on.
+    IF requested_authorizations-%update EQ if_abap_behv=>mk-on .
+*    OR requested_authorizations-%action-Edit EQ if_abap_behv=>mk-on.
       result-%update = lv_auth.
-      result-%action-Edit = if_abap_behv=>auth-allowed.
-    ELSE.
-      result-%update = if_abap_behv=>auth-unauthorized.
-      result-%action-Edit = if_abap_behv=>auth-unauthorized.
+*      result-%action-Edit = if_abap_behv=>auth-allowed.
+*    ELSE.
+*      result-%update = if_abap_behv=>auth-unauthorized.
+*      result-%action-Edit = if_abap_behv=>auth-unauthorized.
     ENDIF.
 
     IF requested_authorizations-%delete EQ if_abap_behv=>mk-on.
       result-%delete = lv_auth.
     ENDIF.
-****   actualizar incidente
-****   eliminar incidente
-***
-****  habilitar o no x btn para determinado usuario
-***    IF requested_authorizations-%update EQ if_abap_behv=>mk-on OR
-***     requested_authorizations-%action-Edit EQ if_abap_behv=>mk-on.
-***
-***      IF lv_user EQ user.
-****        result-%update = if_abap_behv=>auth-unauthorized.           " no tiene permisos
-****        result-%action-Edit = if_abap_behv=>auth-unauthorized.
-***        result-%update = if_abap_behv=>auth-allowed.
-***        result-%action-Edit = if_abap_behv=>auth-allowed.
-***      ELSE.
-***        result-%update = if_abap_behv=>auth-unauthorized.
-***        result-%action-Edit = if_abap_behv=>auth-unauthorized.
-****        result-%update = if_abap_behv=>auth-allowed.
-****        result-%action-Edit = if_abap_behv=>auth-allowed.
-***
-***      ENDIF.
-***
-***    ENDIF.
-***
-****   sacar la opcion de eliminar para determinados usuarios
-***    IF requested_authorizations-%delete EQ if_abap_behv=>mk-on.
-***      IF lv_user EQ user.
-***        result-%delete = if_abap_behv=>auth-allowed.
-****        result-%delete = if_abap_behv=>auth-unauthorized.   " no se ve el delete
-***      ELSE.
-****        result-%delete = if_abap_behv=>auth-allowed.
-***        result-%delete = if_abap_behv=>auth-unauthorized.
-***      ENDIF.
-***    ENDIF.
-***
 
   ENDMETHOD.
 
   METHOD ChangeStatus.
 
     DATA: status_for_update TYPE TABLE FOR UPDATE zi_inct_sc,
+*          lv_next_his_id    TYPE zdt_inct_h_sc-his_id.
           lv_error          TYPE abap_boolean.
+
 *    DATA history_for_create TYPE TABLE FOR UPDATE zi_inct_h_sc.
 
-    DATA(keys_valid_status) = keys.     " SACAR??
-    DATA(lv_user) = cl_abap_context_info=>get_user_technical_name(  ).
+    DATA(keys_valid_status) = keys.
+*    DATA(lv_user) = cl_abap_context_info=>get_user_technical_name(  ).
 
-    IF lv_user NE gc_admin_user.
-*    IF lv_user ne gc_admin_no_user.        "prueba para que no deje cambiar el estado
-      LOOP AT keys ASSIGNING FIELD-SYMBOL(<key>).
-        APPEND VALUE #( %tky = <key>-%tky ) TO failed-incident.
-
-        APPEND VALUE #( %tky = <key>-%tky
-                        %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
-                                                      text = 'No tiene autorización para cambiar el estado ' )
-                      ) TO reported-incident.
-      ENDLOOP.
-      RETURN.
-
-    ENDIF.
+*    IF lv_user NE gc_admin_user.
+**    IF lv_user ne gc_admin_no_user.        "prueba para que no deje cambiar el estado
+*      LOOP AT keys ASSIGNING FIELD-SYMBOL(<key>).
+*        APPEND VALUE #( %tky = <key>-%tky ) TO failed-incident.
+*
+*        APPEND VALUE #( %tky = <key>-%tky
+*                        %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
+*                                                      text = 'No tiene autorización para cambiar el estado ' )
+*                      ) TO reported-incident.
+*      ENDLOOP.
+*      RETURN.
+*
+*    ENDIF.
 
 
 
@@ -373,41 +231,18 @@ CLASS lhc_Incident IMPLEMENTATION.
 
 *   si hay error corta
     CHECK lv_error NE abap_true.
-
-*   siguiendo video
-*DATA status_inc TYPE TABLE FOR UPDATE ZI_INCT_SC.
-*
-** lectura de los datos
-*    READ ENTITIES OF zi_inct_sc IN LOCAL MODE
-*    ENTITY Incident
-*     FIELDS ( Status )
-*      WITH CORRESPONDING #( keys )
-*      RESULT DATA(incidents).
-*
-*
-*      LOOP AT incidents ASSIGNING FIELD-SYMBOL(<incident>).
-*      DATA(status_inci) = keys[ KEY  id %tky = <incident>-%tky ]-%param-NewStatus.
-*   APPEND VALUE #( %tky = <incident>-%tky
-*                    )
-*
-*      ENDLOOP.
-***************************************
-
-*****************CAMBIA EL ESTADO DE INCIDENTES NO DE HISTORIAL, NO SE VE EL TEXTO NOSE SI SIRVE***********************
-
-* definir una tabla para tratar siempre los multiples registros que se pueden solicitar
-*    DATA status_for_update TYPE TABLE FOR UPDATE zi_inct_sc.
-
+*    CHECK lv_error IS INITIAL.
 
 *status_for_update[ 1 ]
-* lectura de datos para recuperar la informacion que se quiere modificar
+* leer incidente actual
     READ ENTITIES OF zi_inct_sc IN LOCAL MODE
     ENTITY Incident
-    FIELDS ( Status )
+    FIELDS ( Status ChangedDate )
     WITH CORRESPONDING #( keys )
     RESULT DATA(incidents).
 
 *    DATA status_prob TYPE zdt_status_sc-status_code.
+    DATA(lv_next_his_id) = get_next_history_id(  ).
 
 *    validacion  + armado update
     LOOP AT incidents ASSIGNING FIELD-SYMBOL(<incident>).
@@ -422,7 +257,7 @@ CLASS lhc_Incident IMPLEMENTATION.
         CONTINUE.
       ENDIF.
 
-      DATA(new_status) = ls_key-%param-NewStatus.
+      DATA(new_status)      = ls_key-%param-NewStatus.
       DATA(new_text_status) = ls_key-%param-Observation.
 
 *   prueba validacion
@@ -431,18 +266,15 @@ CLASS lhc_Incident IMPLEMENTATION.
 
 
 *   validar cambios de estado - VER SI DE VERDAD HACE FALTA TAMBIEN ACA
-      IF <incident>-Status = status_code-status_cn
+      IF <incident>-Status   = status_code-status_cn
         OR <incident>-Status = status_code-status_co
         OR <incident>-Status = status_code-status_cl.
 
         APPEND VALUE #( %tky = <incident>-%tky ) TO failed-incident.
-*        APPEND VALUE #( %tky = <key_valid_status>-%tky ) TO failed-incident.
-
-*        APPEND VALUE #( %tky = <key_valid_status>-%tky
         APPEND VALUE #( %tky = <incident>-%tky
                         %msg = new_message_with_text(
-                               severity = if_abap_behv_message=>severity-error
-                               text = 'No es posible cambiar el estado del incidente' )
+                               severity        = if_abap_behv_message=>severity-error
+                               text            = 'No es posible cambiar el estado del incidente' )
                                %element-Status = if_abap_behv=>mk-on  "PROBAR - ANDA??
                       ) TO reported-incident.
 
@@ -450,12 +282,8 @@ CLASS lhc_Incident IMPLEMENTATION.
       ENDIF.
 
 *    No permitir PE -> CL / CO
-*      IF <incident>-Status = COND #(  WHEN status_code-status_pe AND ( new_status = status_code-status_co
-*                                                      OR new_status = status_code-status_cl )
-*                                                      THEN if_abap_behv=>auth-allowed
-*                                                      ELSE if_abap_behv=>auth-unauthorized ).
       IF <incident>-Status = status_code-status_pe AND ( new_status = status_code-status_co
-                                                      OR new_status = status_code-status_cl ) .
+                                                    OR   new_status = status_code-status_cl ) .
 
         APPEND VALUE #( %tky = <incident>-%tky ) TO failed-incident.
 *        APPEND VALUE #( %tky = <key_valid_status>-%tky ) TO failed-incident.
@@ -492,19 +320,41 @@ CLASS lhc_Incident IMPLEMENTATION.
 *        update de status
       APPEND VALUE #( %tky   = <incident>-%tky
                       status = new_status
+                      ChangedDate = cl_abap_context_info=>get_system_date(  )
                      ) TO status_for_update.
 
     ENDLOOP.
-*    Ejecutar update
+
+*    Actualizar incidente
     IF status_for_update IS NOT INITIAL.
       MODIFY ENTITIES OF zi_inct_sc IN LOCAL MODE
       ENTITY Incident
-      UPDATE FIELDS ( Status )
+      UPDATE FIELDS ( Status ChangedDate )
       WITH status_for_update.
 
     ENDIF.
 
-*   devolver entidad actual
+*   crear historial
+    MODIFY ENTITIES OF zi_inct_sc IN LOCAL MODE
+    ENTITY Incident
+    CREATE BY \_Historial
+    FROM VALUE #( FOR incident IN incidents INDEX INTO idx ( %tky           = incident-%tky
+                                                             %target        = VALUE #( ( %cid = |HIS_{ idx }|
+                                                             HisId          = lv_next_his_id + idx - 1
+                                                             PreviousStatus = incident-Status
+                                                             NewStatus      = keys_valid_status[ KEY id %tky = incident-%tky ]-%param-NewStatus
+                                                             Text           = keys_valid_status[ KEY id %tky = incident-%tky ]-%param-Observation
+                                                             %control       = VALUE #(  HisId           = if_abap_behv=>mk-on
+                                                                                        PreviousStatus  = if_abap_behv=>mk-on
+                                                                                        NewStatus       = if_abap_behv=>mk-on
+                                                                                        Text            = if_abap_behv=>mk-on
+                                                                                       )
+                                                                                       ) )
+                                                             )
+                 ).
+
+
+*   devolver resultados
     READ ENTITIES OF zi_inct_sc IN LOCAL MODE
     ENTITY Incident
     ALL FIELDS WITH CORRESPONDING #( keys )
@@ -550,26 +400,30 @@ CLASS lhc_Incident IMPLEMENTATION.
                                                  ChangedDate     = cl_abap_context_info=>get_system_date(  )
                                                  ) ).    "maneja la clave tecnica->necesita la clave tencica para identificar los registros afectados
 
-*   PONER LOGICA PARA QUE CAMPO FECHA MOD NO SE PUEDA MODIFICAR
-
+*   PONER LOGICA PARA QUE CAMPO FECHA MODIFICACION NO SE PUEDA MODIFICAR CUANDO SE CREA UN NUEVO INCIDENTE
 
   ENDMETHOD.
 
   METHOD createInitialHistory.
 
     DATA lv_text_ini TYPE string VALUE 'First Incident'.
+    DATA(lv_next_his_id) = get_next_history_id(  ).
 
     MODIFY ENTITIES OF zi_inct_sc IN LOCAL MODE
     ENTITY Incident CREATE BY \_Historial
     FROM VALUE #( FOR key IN keys INDEX INTO i ( %tky    = key-%tky
-                                                 %target = VALUE #( ( %cid      = |ID_{ i }|
-                                                                      NewStatus = status_code-status_op
-                                                                      Text      = lv_text_ini
-                                                                      %control  = VALUE #( NewStatus = if_abap_behv=>mk-on
-                                                                                           Text      = if_abap_behv=>mk-on
+                                                 %target = VALUE #( ( %cid           = |ID_{ i }|
+                                                                      HisId          = lv_next_his_id + i - 1
+                                                                      PreviousStatus = 'CN'
+                                                                      NewStatus      = status_code-status_op
+                                                                      Text           = lv_text_ini
+                                                                      %control  = VALUE #( HisId            = if_abap_behv=>mk-on
+                                                                                           PreviousStatus   = if_abap_behv=>mk-on
+                                                                                           NewStatus        = if_abap_behv=>mk-on
+                                                                                           Text             = if_abap_behv=>mk-on
                                                                                          )
-                                                                    ) )
-                                               ) ).
+                                                                        ) )
+                                                   ) ).
   ENDMETHOD.
 
   METHOD validateDateFuture.
@@ -639,61 +493,6 @@ CLASS lhc_Incident IMPLEMENTATION.
 
 
       ENDIF.
-
-
-*      IF incidente-CreationDate IS INITIAL. " si es inicial bloquear el estado transaccional
-**  sobre el registro con la clave tecnica en el que aplica el bloqueo del estado transaccional
-*        APPEND VALUE #( %tky = incidente-%tky ) TO failed-incident.
-** probando de aplicar mensajes de error
-*        APPEND VALUE #( %tky = incidente-%tky
-*                        %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
-*                                                      text     = 'La fecha de creacion debe contener un dato' )
-**                        %msg = NEW /dmo/cm_flight_messages( textid = /dmo/cm_flight_messages=>begin_date_bef_end_date
-**                                                            severity = if_abap_behv_message=>severity-error )
-*                         %element-CreationDate = if_abap_behv=>mk-on
-*                        ) TO reported-incident.
-*
-** probando de aplicar mensajes de error
-*      ENDIF.
-
-
-*  si la fecha de creacion es menor a la fecha actual
-*      IF incidente-CreationDate < cl_abap_context_info=>get_system_date(  ) AND incidente-CreationDate IS NOT INITIAL.
-*
-*        APPEND VALUE #( %tky = incidente-%tky ) TO failed-incident.
-*
-** probando de aplicar mensajes de error
-*        APPEND VALUE #( %tky = incidente-%tky
-*                        %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
-*                                                      text     = 'La fecha de creacion no puede ser anterior a la fecha actual' )
-**                            %msg = NEW /dmo/cm_flight_messages( textid = /dmo/cm_flight_messages=>begin_date_on_or_bef_sysdate
-**                                                                 begin_date = incidente-CreationDate
-**                                                                 severity = if_abap_behv_message=>severity-error )
-*                         %element-CreationDate = if_abap_behv=>mk-on
-*                            ) TO reported-incident.
-*
-*
-** probando de aplicar mensajes de error
-*
-*      ENDIF.
-
-*      IF  incident-ChangedDate < incident-CreationDate AND incident-ChangedDate IS NOT INITIAL
-*                                                       AND incident-CreationDate IS NOT INITIAL.
-*        APPEND VALUE #( %tky = incident-%tky ) TO failed-incident.
-*      ELSEIF incident-ChangedDate > cl_abap_context_info=>get_system_date(  ).
-*        incident-ChangedDate = cl_abap_context_info=>get_system_date(  ).
-*      ELSE.
-*        incident-ChangedDate = cl_abap_context_info=>get_system_date(  ).
-*
-*      ENDIF.
-
-
-*      IF incident-ChangedDate <= incident-CreationDate AND incident-CreationDate IS NOT INITIAL
-*                                                      AND incident-ChangedDate IS NOT INITIAL.
-*
-*        APPEND VALUE #( %tky = incident-%tky ) TO failed-incident.
-*      ENDIF.
-
     ENDLOOP.
   ENDMETHOD.
 
@@ -735,13 +534,19 @@ CLASS lhc_Incident IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_next_incident_id.
-    SELECT SINGLE MAX( incident_id )
-    FROM zdt_inct_sc
-*     FIELDS incident_id
+    SELECT SINGLE FROM zdt_inct_sc
+     FIELDS MAX( incident_id )
     INTO @DATA(lv_max_id).
 
     rv_incident_id = lv_max_id + 1.
+  ENDMETHOD.
 
+  METHOD get_next_history_id.
+    SELECT SINGLE FROM zdt_inct_h_sc
+     FIELDS MAX( his_id )
+    INTO @DATA(lv_max_his_id).
+
+    rv_history_id = lv_max_his_id + 1.
   ENDMETHOD.
 
   METHOD validationStatus.
@@ -815,11 +620,6 @@ CLASS lhc_Incident IMPLEMENTATION.
         APPEND VALUE #( %tky = incident-%tky ) TO failed-incident.
 *   indicar un mensaje de error
 *reported-incident[ 1 ]-
-*       APPEND VALUE #( %tky = incident-%tky
-*                       %msg = NEW /dmo/cm_flight_messages( textid = /dmo/cm_flight_messages=>enter_agency_id
-*                                                                                severity = if_abap_behv_message=>severity-error )
-*                       ) to reported-incident.
-
         APPEND VALUE #( %tky = incident-%tky
                         %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
                                                           text = 'Debe completar el campo de Priority' )

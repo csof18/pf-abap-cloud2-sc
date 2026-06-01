@@ -1,5 +1,4 @@
 @AbapCatalog.viewEnhancementCategory: [#NONE]
-//@AccessControl.authorizationCheck: #CHECK
 @AccessControl.authorizationCheck: #NOT_REQUIRED
 @EndUserText.label: 'CDS - Info basica de incidentes'
 @Metadata.ignorePropagatedAnnotations: true
