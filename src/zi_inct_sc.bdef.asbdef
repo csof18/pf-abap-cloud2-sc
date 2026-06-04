@@ -19,7 +19,7 @@ authorization master ( global, instance )
   //  Campos solo lectura
   field ( readonly ) IncidentId,
   Status,       // validar si va o no este
-//  ChangedDate,
+  //  ChangedDate,
   CreationDate,
   LocalCreatedBy,
   LocalCreatedAt,
@@ -58,7 +58,7 @@ authorization master ( global, instance )
   validation validationPriorityCode on save { create; update; field Priority; }
 
   //  validar  rango de fechas
-//  validation validateDateRange on save { create; update; field CreationDate, ChangedDate; }
+  //  validation validateDateRange on save { create; update; field CreationDate, ChangedDate; }
   validation validateDateRange on save { create; field CreationDate, ChangedDate; }
 
   validation validateDateFuture on save { create; update; field CreationDate, ChangedDate; }
@@ -139,6 +139,9 @@ authorization dependent by _Incident
   LastChangedAt;
 
   association _Incident { with draft; }
+
+  validation validateDeleteHistory on save { delete; }
+
 
   mapping for zdt_inct_h_sc
     {

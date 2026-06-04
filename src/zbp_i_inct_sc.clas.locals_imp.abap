@@ -1,3 +1,35 @@
+CLASS lhc_incidenthis DEFINITION INHERITING FROM cl_abap_behavior_handler.
+
+  PRIVATE SECTION.
+
+    METHODS validateDeleteHistory FOR VALIDATE ON SAVE
+      IMPORTING keys FOR IncidentHis~validateDeleteHistory.
+
+ENDCLASS.
+
+CLASS lhc_incidenthis IMPLEMENTATION.
+
+  METHOD validateDeleteHistory.
+*   READ ENTITIES OF zi_inct_sc IN LOCAL MODE
+*    ENTITY IncidentHis
+*    FIELDS ( HisUuid )
+*    WITH CORRESPONDING #( keys )
+*    RESULT DATA(incidentsHis).
+
+    LOOP AT keys ASSIGNING FIELD-SYMBOL(<key>).
+
+      APPEND VALUE #( %tky = <key>-%tky ) TO failed-incidenthis.
+
+      APPEND VALUE #( %tky = <key>-%tky
+                      %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                     text    = |No es posible eliminar un Historial | )
+                                                   ) TO reported-incidenthis.
+
+    ENDLOOP.
+  ENDMETHOD.
+
+ENDCLASS.
+
 CLASS lhc_Incident DEFINITION INHERITING FROM cl_abap_behavior_handler.
   PRIVATE SECTION.
 
@@ -298,6 +330,20 @@ CLASS lhc_Incident IMPLEMENTATION.
         CONTINUE.
       ENDIF.
 
+      IF <incident>-Status = new_status.
+        APPEND VALUE #( %tky = <incident>-%tky
+                        %msg = new_message_with_text(
+                               severity = if_abap_behv_message=>severity-error
+                               text = 'El nuevo estado debe ser diferente al actual' )
+                               %element-Status = if_abap_behv=>mk-on
+                      ) TO reported-incident.
+
+        APPEND VALUE #( %tky = <incident>-%tky ) TO failed-incident.
+
+        CONTINUE.
+
+      ENDIF.
+
 ** Si pasa a In Progress debe tener responsable
 *      IF new_status = status_code-status_ip
 *      AND <incident>-Responsible IS INITIAL.
@@ -497,6 +543,24 @@ CLASS lhc_Incident IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD validateDeleteIncident.
+    READ ENTITIES OF zi_inct_sc IN LOCAL MODE
+    ENTITY Incident
+    FIELDS ( IncidentId Status )
+    WITH CORRESPONDING #( keys )
+    RESULT DATA(incidents).
+
+    LOOP AT incidents INTO DATA(incidente).
+      IF incidente-Status NE status_code-status_op.
+        APPEND VALUE #( %tky = incidente-%tky ) TO failed-incident.
+
+        APPEND VALUE #( %tky = incidente-%tky
+                        %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                       text    = |El incidente { incidente-IncidentId } no se puede eliminar, unicamente con estado Open | )
+                        %element-Status = if_abap_behv=>mk-on ) TO reported-incident.
+      ENDIF.
+
+    ENDLOOP.
+
   ENDMETHOD.
 
   METHOD validateStatusChange.
