@@ -1,29 +1,34 @@
  projection;
-strict ( 2 );
-use draft;
+ strict ( 2 );
+ use draft;
 
-define behavior for ZC_DT_INCT_SC alias Incident
-{
-  use create;
-  use update;
-  use delete;
+ define behavior for ZC_DT_INCT_SC alias Incident
+ {
+   use create;
+   use update;
+   use delete;
 
-  use action ChangeStatus;
+   use action ChangeStatus;
 
-  use action Resume;
-  use action Edit;
-  use action Activate;
-  use action Discard;
-  use action Prepare;
+   use action Resume;
+   use action Edit;
+   use action Activate;
+   use action Discard;
+   use action Prepare;
 
-  use association _Historial { with draft; }
-//  use association _Historial { create; with draft; }
-}
+   side effects
+   {
+     action ChangeStatus affects entity _Historial;
+   }
 
-define behavior for ZC_DT_INCT_H_SC alias IncidentHis
-{
-  use update;
-  use delete;
+   use association _Historial { with draft; }
+   //  use association _Historial { create; with draft; }
+ }
 
-  use association _Incident { with draft; }
-}
+ define behavior for ZC_DT_INCT_H_SC alias IncidentHis
+ {
+   use update;
+   use delete;
+
+   use association _Incident { with draft; }
+ }

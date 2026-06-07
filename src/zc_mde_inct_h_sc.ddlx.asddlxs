@@ -9,45 +9,109 @@
 
 
 @UI.presentationVariant: [{ sortOrder: [{ by: 'HisId',
-                                          direction: #ASC
+                                          direction: #DESC
                                          }
                                         ]
                             }]
 @UI.createHidden: true
-
+@UI.updateHidden: true
+@UI.deleteHidden: true
 annotate entity ZC_DT_INCT_H_SC with
 {
-//@UI.facet: [{  
-//                  id: 'History',
-//                  type: #LINEITEM_REFERENCE,
-//                  label: 'History',
-//                  position: 20,
-//                  targetElement: '_Incident'
-//                }]
-  @UI.lineItem:       [{ position: 9, importance: #MEDIUM }]
-  IncUuid;                    
+  @UI.facet: [{
+                    id: 'History',
+                    type: #IDENTIFICATION_REFERENCE,
+  //                    type: #LINEITEM_REFERENCE,
+                    label: 'History details',
+  //                    label: 'History',
+                    position: 20//,
+                    //targetElement: '_Incident'
+                  }]
+  //  @UI.facet: [{
+  //                    id: 'History',
+  //                    type: #LINEITEM_REFERENCE,
+  //                    label: 'History',
+  //                    position: 20,
+  //                    targetElement: '_Incident'
+  //                  }]
 
-  @UI.identification: [{ position: 9 }]
+  //  @UI.lineItem:       [{ position: 8,
+  //                         importance: #MEDIUM,
+  //                         label: 'Identifier for the Incident' }]
+  //
+  //  @ui.fieldGroup: [{  }]
+  @UI.hidden: true
+  @Consumption.filter.hidden: true
+  IncUuid;
+
+  //  @UI.lineItem:       [{ position: 9,
+  //                         importance: #MEDIUM,
+  //                         label: 'Identifier for the History' }]
+  //  @UI.identification: [{ position: 9 }]
+  @UI.hidden: true
   HisUuid;
 
-  @UI.lineItem:       [{ position: 10, importance: #MEDIUM }]
-  @UI.identification: [{ position: 10 }]
-  @UI.selectionField: [{ position: 10 }]
+  @UI.lineItem:       [{ position: 10,
+                         importance: #MEDIUM,
+                         label: 'History ID' }]
+  @UI.identification: [{ label:'History ID',
+                         position: 10 }]
+  //  @UI.selectionField: [{ position: 10 }]
   HisId;
 
 
-  @UI.lineItem:       [{ position: 20, importance: #LOW }]
-  @UI.identification: [{ position: 20 }]
-  @UI.selectionField: [{ position: 20 }]
+  @UI.lineItem:       [{ position: 20,
+                         importance: #LOW,
+                         label: 'Previous Status' }]
+  @UI.identification: [{ label: 'Previous Status',
+                          position: 20 }]
+  //  @UI.selectionField: [{ position: 20 }]
   PreviousStatus;
 
-  @UI.lineItem:       [{ position: 30, importance: #LOW }]
-  @UI.identification: [{ position: 30 }]
-  @UI.selectionField: [{ position: 30 }]
+  @UI.lineItem:       [{ position: 30,
+                         importance: #LOW,
+                         label: 'New Status' }]
+  @UI.identification: [{ label: 'New Status',
+                          position: 30 }]
+  //  @UI.selectionField: [{ position: 30 }]
   NewStatus;
 
-  @UI.lineItem:       [{ position: 40, importance: #LOW }]
-  @UI.identification: [{ position: 40 }]
+  @UI.lineItem:       [{ position: 40,
+                         importance: #LOW,
+                         label: 'Observation' }]
+  @UI.identification: [{ label: 'Observation',
+                          position: 40 }]
   @UI.selectionField: [{ position: 40 }]
+  //  @UI.hidden: true
   Text;
+
+  @Consumption.filter.hidden: true
+  @UI.hidden: true
+  LocalCreatedBy;
+
+  //  @UI.lineItem:       [{ position: 50,
+  //                         importance: #LOW,
+  //                         label: 'Local CreatedAt' }]
+  //  @UI.identification: [{ label: 'Local CreatedAt',
+  //                          position: 50 }]
+  @Consumption.filter.hidden: true
+  @UI.hidden: true
+  LocalCreatedAt;
+
+  //  @UI.lineItem:       [{ position: 60,
+  //                         importance: #LOW,
+  //                         label: 'Local Last ChangedBy' }]
+  //  @UI.identification: [{ label: 'Local Last ChangedBy',
+  //                          position: 60 }]
+//   @UI.identification: [{ position: 70, label: 'Last Changed By' }]
+  @Consumption.filter.hidden: true
+  LocalLastChangedBy;
+
+  @Consumption.filter.hidden: true
+  @UI.hidden: true
+  LocalLastChangedAt;
+
+  @Consumption.filter.hidden: true
+  @UI.hidden: true
+  LastChangedAt;
 }

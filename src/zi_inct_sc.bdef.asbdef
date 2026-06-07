@@ -9,17 +9,17 @@ lock master
 total etag LastChangedAt
 etag master LocalLastChangedAt
 authorization master ( global, instance )
-//authorization master ( instance )
 {
   create ( authorization : global );
   update;
+//  delete ( precheck );
   delete;
   field ( numbering : managed, readonly ) IncUuid;
 
   //  Campos solo lectura
   field ( readonly ) IncidentId,
   Status,       // validar si va o no este
-  //  ChangedDate,
+   ChangedDate, //??
   CreationDate,
   LocalCreatedBy,
   LocalCreatedAt,
@@ -46,20 +46,19 @@ authorization master ( global, instance )
   }
 
 
-  //validacion de campos obligatorios -> validateMandatoryFields
+  //validacion de campos obligatorios
   validation validationIncident on save { create; update; }
 
   //  reglas de negocio de estado
   validation validationStatus on save { create; update; field Status; }
 
-  validation validateStatusChange on save { create; update; field Status; }
 
   // validacion de prioridades validos
   validation validationPriorityCode on save { create; update; field Priority; }
 
   //  validar  rango de fechas
   //  validation validateDateRange on save { create; update; field CreationDate, ChangedDate; }
-  validation validateDateRange on save { create; field CreationDate, ChangedDate; }
+  validation validateDateRange on save { create; update; field CreationDate, ChangedDate; }
 
   validation validateDateFuture on save { create; update; field CreationDate, ChangedDate; }
   //  validation validateDateFuture on save { create; update; }
@@ -88,7 +87,7 @@ authorization master ( global, instance )
     validation validationIncident;
     validation validateDateRange;
     validation validateDateFuture;
-    validation validateStatusChange;
+//    validation validateStatusChange;
     validation validationStatus;
     validation validationPriorityCode;
   }
@@ -123,8 +122,8 @@ authorization dependent by _Incident
 //etag master LocalLastChangedAt
 {
   //  operaciones habilitadas
-  update;
-  delete;
+  update ( features : instance );
+  delete ( features : instance );
   //  field ( readonly )  IncUuid, HisUuid;
   field ( numbering : managed, readonly ) HisUuid;
 
@@ -132,6 +131,7 @@ authorization dependent by _Incident
   HisId,            //ver si realmente van estos aca
   PreviousStatus,
   NewStatus,        //ver si realmente van estos aca
+  Text,
   LocalCreatedBy,
   LocalCreatedAt,
   LocalLastChangedBy,
@@ -139,10 +139,6 @@ authorization dependent by _Incident
   LastChangedAt;
 
   association _Incident { with draft; }
-
-  validation validateDeleteHistory on save { delete; }
-
-
   mapping for zdt_inct_h_sc
     {
       IncUuid            = inc_uuid;

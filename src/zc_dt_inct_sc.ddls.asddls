@@ -7,7 +7,7 @@
 
 define root view entity ZC_DT_INCT_SC
   provider contract transactional_query
-//provider contract transactional_interface
+  //provider contract transactional_interface
   as projection on ZI_INCT_SC
 {
       @Search.ranking: #HIGH
@@ -26,6 +26,7 @@ define root view entity ZC_DT_INCT_SC
       @Search.defaultSearchElement: true
       @Search.ranking: #HIGH
       @Search.fuzzinessThreshold: 0.8
+      @Consumption.filter.hidden: true
       Title,
 
       @Search.defaultSearchElement: true
@@ -36,7 +37,7 @@ define root view entity ZC_DT_INCT_SC
       @Search.ranking: #LOW
       @EndUserText.label: 'Fecha de creacion'
       CreationDate,
-      
+
       @Search.defaultSearchElement: true
       @Search.ranking: #LOW
       @EndUserText.label: 'Fecha de modificacion'

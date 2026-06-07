@@ -39,15 +39,18 @@ annotate entity ZC_DT_INCT_SC with
                    position: 80,
                    importance: #HIGH
                    //exclude: true        // prueba si funciona app
-                 }]
+                 },
+                 { hidden: true }]
   @UI.identification: [{
                           type: #FOR_ACTION,
                           dataAction: 'ChangeStatus',
                           label: 'Cambiar estado',
                           position: 80,
                           importance: #HIGH
-                      }]
-  @UI.hidden: true
+                      },
+                      { hidden: true }
+                      ]
+//  @UI.hidden: true
   IncUuid;
 
 
@@ -58,22 +61,29 @@ annotate entity ZC_DT_INCT_SC with
 
   @UI.lineItem:       [{ position: 20, importance: #LOW }]
   @UI.identification: [{ position: 20 }]
+  //  @Consumption.filter.hidden: true
+  @UI.hidden: true
   Title;
 
 
   @UI.lineItem:       [{ position: 30, importance: #LOW }]
   @UI.identification: [{ position: 30 }]
+//  @UI.hidden: true
   Description;
 
   @UI.lineItem:       [{ position: 40, importance: #LOW }]
   @UI.identification: [{ position: 40 }]
   @UI.selectionField: [{ position: 20 }]
+  @Consumption.valueHelpDefinition: [{ entity: { name: 'ZI_STATUS_SC',
+                                                 element: 'StatusCode' } //,
+  //                                       useForValidation: true
+  }]
   Status;
 
   @UI.lineItem:       [{ position: 50, importance: #LOW }]
   @UI.identification: [{ position: 50 }]
   @UI.selectionField: [{ position: 30 }]
-  @Consumption.valueHelpDefinition: [{ entity: { name: 'ZI_PRIORITY_SC',     //averiguar que valor iria aca
+  @Consumption.valueHelpDefinition: [{ entity: { name: 'ZI_PRIORITY_SC',
                                                  element: 'PriorityCode' } //,
   //                                       useForValidation: true
   }]
@@ -89,18 +99,129 @@ annotate entity ZC_DT_INCT_SC with
   @UI.selectionField: [{ position: 50 }]
   ChangedDate;
 
+  @Consumption.filter.hidden: true
   @UI.hidden: true
   LocalCreatedBy;
 
+  @Consumption.filter.hidden: true
   @UI.hidden: true
   LocalCreatedAt;
 
+  @Consumption.filter.hidden: true
   @UI.hidden: true
   LocalLastChangedBy;
 
+  @Consumption.filter.hidden: true
   @UI.hidden: true
   LocalLastChangedAt;
 
+  @Consumption.filter.hidden: true
   @UI.hidden: true
   LastChangedAt;
 }
+//@Metadata.layer: #CORE
+//@UI.headerInfo: {
+//                  typeName: 'Incident',
+//                  typeNamePlural: 'Incidents',
+//                  title: {  type: #STANDARD,
+//                            value: 'IncidentId'
+//                          },
+//                  description: { type: #STANDARD,
+//                                 value: 'Title' }
+//                 }
+//
+//
+//@UI.presentationVariant: [{ sortOrder: [{
+//                                          by: 'IncidentId',
+//                                          direction: #ASC
+//                                         }
+//                                        ]
+//                            }]
+//annotate entity ZC_DT_INCT_SC with
+//{
+//
+//  @UI.facet: [{
+//                id: 'GeneralInformation',
+//                type: #IDENTIFICATION_REFERENCE,
+//                label: 'General Information',
+//                position: 10
+//               },
+//               {
+//                  id: 'History',
+//                  type: #LINEITEM_REFERENCE,
+//                  label: 'History',
+//                  position: 20,
+//                  targetElement: '_Historial'
+//                }]
+//  @UI.lineItem: [{
+//                   type: #FOR_ACTION,
+//                   dataAction: 'ChangeStatus',
+//                   label: 'Cambiar estado',
+//                   position: 80,
+//                   importance: #HIGH
+//                   //exclude: true        // prueba si funciona app
+//                 }]
+//  @UI.identification: [{
+//                          type: #FOR_ACTION,
+//                          dataAction: 'ChangeStatus',
+//                          label: 'Cambiar estado',
+//                          position: 80,
+//                          importance: #HIGH
+//                      }]
+//  @UI.hidden: true
+//  IncUuid;
+//
+//
+//  @UI.lineItem:       [{ label: 'Incident Id', position: 10, importance: #MEDIUM }]
+//  @UI.identification: [{ label: 'Incident Id',position: 10 }]
+//  @UI.selectionField: [{ position: 10 }]
+//  IncidentId;
+//
+//  @UI.lineItem:       [{ position: 20, importance: #LOW }]
+//  @UI.identification: [{ position: 20 }]
+//  Title;
+//
+//
+//  @UI.lineItem:       [{ position: 30, importance: #LOW }]
+//  @UI.identification: [{ position: 30 }]
+//  Description;
+//
+//  @UI.lineItem:       [{ position: 40, importance: #LOW }]
+//  @UI.identification: [{ position: 40 }]
+//  @UI.selectionField: [{ position: 20 }]
+//  Status;
+//
+//  @UI.lineItem:       [{ position: 50, importance: #LOW }]
+//  @UI.identification: [{ position: 50 }]
+//  @UI.selectionField: [{ position: 30 }]
+//  @Consumption.valueHelpDefinition: [{ entity: { name: 'ZI_PRIORITY_SC',     //averiguar que valor iria aca
+//                                                 element: 'PriorityCode' } //,
+//  //                                       useForValidation: true
+//  }]
+//  Priority;
+//
+//  @UI.lineItem:       [{ position: 60, importance: #LOW }]
+//  @UI.identification: [{ position: 60 }]
+//  @UI.selectionField: [{ position: 40 }]
+//  CreationDate;
+//
+//  @UI.lineItem:       [{ position: 70, importance: #LOW }]
+//  @UI.identification: [{ position: 70 }]
+//  @UI.selectionField: [{ position: 50 }]
+//  ChangedDate;
+//
+//  @UI.hidden: true
+//  LocalCreatedBy;
+//
+//  @UI.hidden: true
+//  LocalCreatedAt;
+//
+//  @UI.hidden: true
+//  LocalLastChangedBy;
+//
+//  @UI.hidden: true
+//  LocalLastChangedAt;
+//
+//  @UI.hidden: true
+//  LastChangedAt;
+//}

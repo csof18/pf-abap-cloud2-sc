@@ -13,15 +13,25 @@ define view entity ZC_DT_INCT_H_SC
       NewStatus,
       @Search.defaultSearchElement: true
       Text,
+      
       @Semantics.user.createdBy: true
+//      @Consumption.filter.hidden: true
       LocalCreatedBy,
+      
       @Semantics.systemDateTime.createdAt: true
+//      @Consumption.filter.hidden: true
       LocalCreatedAt,
+      
       @Semantics.user.localInstanceLastChangedBy: true
+//      @Consumption.filter.hidden: true
       LocalLastChangedBy,
+      
       @Semantics.systemDateTime.localInstanceLastChangedAt: true
+//      @Consumption.filter.hidden: true
       LocalLastChangedAt,
+      
       @Semantics.systemDateTime.lastChangedAt: true
+//      @Consumption.filter.hidden: true
       LastChangedAt,
       /* Associations */
       _Incident : redirected to parent ZC_DT_INCT_SC
