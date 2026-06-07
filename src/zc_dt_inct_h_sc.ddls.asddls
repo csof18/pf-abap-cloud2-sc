@@ -1,3 +1,4 @@
+//@AbapCatalog.viewEnhancementCategory: [ #NONE ]
 @AccessControl.authorizationCheck: #NOT_REQUIRED
 @EndUserText.label: 'Projection - history'
 @Metadata.ignorePropagatedAnnotations: true

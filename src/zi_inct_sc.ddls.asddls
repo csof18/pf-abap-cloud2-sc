@@ -2,9 +2,8 @@
 @AccessControl.authorizationCheck: #NOT_REQUIRED
 @EndUserText.label: 'CDS - Info basica de incidentes'
 @Metadata.ignorePropagatedAnnotations: true
-
+//@Metadata.allowExtensions: true     //va o no???
 @ObjectModel.semanticKey: [ 'IncidentId' ]
-
 define root view entity ZI_INCT_SC
   as select from zdt_inct_sc as Incident
 

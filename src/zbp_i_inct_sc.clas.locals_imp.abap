@@ -87,7 +87,6 @@ CLASS lhc_Incident IMPLEMENTATION.
 
   METHOD get_instance_features.
 *   controlar dinamicamente que hace cada cosa segun el estado de cada registro.
-*    DATA(lv_user) = cl_abap_context_info=>get_user_technical_name(  ).
 *  leer la entidad + datos
     READ ENTITIES OF zi_inct_sc IN LOCAL MODE
     ENTITY Incident

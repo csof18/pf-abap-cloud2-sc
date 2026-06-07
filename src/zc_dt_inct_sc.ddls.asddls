@@ -1,3 +1,4 @@
+//@AbapCatalog.viewEnhancementCategory: [ #NONE ]
 @AccessControl.authorizationCheck: #NOT_REQUIRED
 @EndUserText.label: 'Projection - Incidents'
 @Metadata.ignorePropagatedAnnotations: true
@@ -18,29 +19,33 @@ define root view entity ZC_DT_INCT_SC
       @ObjectModel.text.element: [ 'PriorityText' ]
       Priority,
 
-      @Search.defaultSearchElement: true
       @Search.ranking: #HIGH
       @Search.fuzzinessThreshold: 0.8
+      @Search.defaultSearchElement: true
       IncidentId,
 
-      @Search.defaultSearchElement: true
       @Search.ranking: #HIGH
       @Search.fuzzinessThreshold: 0.8
       @Consumption.filter.hidden: true
+      @Search.defaultSearchElement: true
       Title,
 
-      @Search.defaultSearchElement: true
       @Search.ranking: #MEDIUM
       @Search.fuzzinessThreshold: 0.7
+      @Consumption.filter.hidden: true
+      @Search.defaultSearchElement: true
       Description,
 
       @Search.ranking: #LOW
-      @EndUserText.label: 'Fecha de creacion'
+      @Search.fuzzinessThreshold: 0.8
+      @EndUserText.label: 'Creation Date'
+      @Search.defaultSearchElement: true
       CreationDate,
 
-      @Search.defaultSearchElement: true
       @Search.ranking: #LOW
-      @EndUserText.label: 'Fecha de modificacion'
+      @Search.fuzzinessThreshold: 0.8
+      @EndUserText.label: 'Changed Date'
+      @Search.defaultSearchElement: true
       ChangedDate,
 
       @Search.ranking: #LOW

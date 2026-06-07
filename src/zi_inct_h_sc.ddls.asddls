@@ -2,7 +2,7 @@
 @AccessControl.authorizationCheck: #NOT_REQUIRED
 @EndUserText.label: 'CDS Info del historial de los incidentes'
 @Metadata.ignorePropagatedAnnotations: true
-
+//@Metadata.allowExtensions: true         //ver si va o no aca
 @ObjectModel.usageType:{ serviceQuality: #B,
                          sizeCategory: #S,
                          dataClass: #MIXED
