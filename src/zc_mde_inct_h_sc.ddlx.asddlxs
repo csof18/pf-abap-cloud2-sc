@@ -25,12 +25,12 @@ annotate entity ZC_DT_INCT_H_SC with
   //                position: 20,
   //                targetElement: '_Incident'
   //              }]
-  @UI.facet: [{ id: 'History',
-                purpose: #STANDARD,
-                type: #IDENTIFICATION_REFERENCE,
-                label: 'History details',
-                position: 10//,
-              }]
+    @UI.facet: [{ id: 'History',
+                  purpose: #STANDARD,
+                  type: #IDENTIFICATION_REFERENCE,
+                  label: 'History details',
+                  position: 10//,
+                }]
   //              { id: 'History detalles',
   //                purpose: #STANDARD,
   //                type: #LINEITEM_REFERENCE,
@@ -87,28 +87,28 @@ annotate entity ZC_DT_INCT_H_SC with
        }
   Text;
 
-  //    @Consumption.filter.hidden: true
+  @Consumption.filter.hidden: true
   @UI.identification: [{ label: 'Local Created By',position: 50 }]
   @UI.hidden: true
   LocalCreatedBy;
 
   @UI.identification: [{ label: 'Local Created At',position: 60 }]
-  //  @Consumption.filter.hidden: true
+  @Consumption.filter.hidden: true
   @UI.hidden: true
   LocalCreatedAt;
 
   @UI.identification: [{ label: 'LocalLastChangedBy',position: 70 }]
-  //  @Consumption.filter.hidden: true
+  @Consumption.filter.hidden: true
   @UI.hidden: true
   LocalLastChangedBy;
 
   @UI.identification: [{ label: 'LocalLastChangedAt',position: 80 }]
-  //  @Consumption.filter.hidden: true
+  @Consumption.filter.hidden: true
   @UI.hidden: true
   LocalLastChangedAt;
 
   @UI.identification: [{ label: 'LastChangedAt',position: 90 }]
-  //  @Consumption.filter.hidden: true
+  @Consumption.filter.hidden: true
   @UI.hidden: true
   LastChangedAt;
 }

@@ -27,8 +27,8 @@
 
  define behavior for ZC_DT_INCT_H_SC alias IncidentHis
  {
-   use update;
-   use delete;
+//   use update;
+//   use delete;
 
    use association _Incident { with draft; }
  }

@@ -50,22 +50,27 @@ define root view entity ZC_DT_INCT_SC
 
       @Search.ranking: #LOW
       @Semantics.user.createdBy: true
+      @Consumption.filter.hidden: true
       LocalCreatedBy,
 
       @Search.ranking: #LOW
       @Semantics.systemDateTime.createdAt: true
+      @Consumption.filter.hidden: true
       LocalCreatedAt,
 
       @Search.ranking: #LOW
       @Semantics.user.localInstanceLastChangedBy: true
+      @Consumption.filter.hidden: true
       LocalLastChangedBy,
 
       @Search.ranking: #LOW
       @Semantics.systemDateTime.localInstanceLastChangedAt: true
+      @Consumption.filter.hidden: true
       LocalLastChangedAt,
 
       @Search.ranking: #LOW
       @Semantics.systemDateTime.lastChangedAt: true
+      @Consumption.filter.hidden: true
       LastChangedAt,
 
       _Status.StatusDesc     as StatusText,

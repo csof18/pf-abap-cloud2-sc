@@ -1,6 +1,13 @@
 managed implementation in class zbp_i_inct_sc unique;
 strict ( 2 );
 with draft;
+
+//extensible { with additional save;
+//            with determinations on modify;
+//            with validations on save;
+//            with determinations on save;
+//            }
+
 define behavior for ZI_INCT_SC alias Incident
 persistent table zdt_inct_sc
 draft table zdt_inctd_sc

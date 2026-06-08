@@ -1,9 +1,16 @@
-@AbapCatalog.viewEnhancementCategory: [#NONE]
 @AccessControl.authorizationCheck: #NOT_REQUIRED
 @EndUserText.label: 'CDS - Info basica de incidentes'
 @Metadata.ignorePropagatedAnnotations: true
 //@Metadata.allowExtensions: true     //va o no???
 @ObjectModel.semanticKey: [ 'IncidentId' ]
+
+@AbapCatalog.extensibility: { extensible: true,
+                              elementSuffix: 'ZAG',
+                              allowNewDatasources: false,
+                              dataSources: [ 'Incident' ],
+                              quota: { maximumFields: 500,
+                                        maximumBytes: 50000 },
+                               allowNewCompositions: true }
 define root view entity ZI_INCT_SC
   as select from zdt_inct_sc as Incident
 

@@ -51,22 +51,25 @@ annotate entity ZC_DT_INCT_SC with
                   position: 20,
                   targetElement: '_Historial'
                 }]
-  @UI:{ lineItem: [{ //position: 10,
+  @UI.hidden: true
+  @UI:{ lineItem: [{ position: 9,
                      importance: #HIGH },
                    { type: #FOR_ACTION,
                      dataAction: 'ChangeStatus',
                      label: 'Change Status',
-                     position: 10 },
-                   { hidden: true }],
+                     position: 10 }//,
+                   //{ hidden: true }
+                   ],
         identification: [{  position: 10 },
                          {  type: #FOR_ACTION,
                             dataAction: 'ChangeStatus',
                             label: 'Change Status',
                             position: 10
-                         },
-                         { hidden: true }]
+                         }//,
+                         //{ hidden: true }
+                         ]
         }
-  @UI.hidden: true
+  //@UI.hidden: true
   IncUuid;
 
 
@@ -153,23 +156,23 @@ annotate entity ZC_DT_INCT_SC with
                                       }]
   ChangedDate;
 
-  //  @Consumption.filter.hidden: true
+    @Consumption.filter.hidden: true
   @UI.hidden: true
   LocalCreatedBy;
 
-  //  @Consumption.filter.hidden: true
+    @Consumption.filter.hidden: true
   @UI.hidden: true
   LocalCreatedAt;
 
-  //  @Consumption.filter.hidden: true
+    @Consumption.filter.hidden: true
   @UI.hidden: true
   LocalLastChangedBy;
 
-//  @Consumption.filter.hidden: true
+  @Consumption.filter.hidden: true
   @UI.hidden: true
   LocalLastChangedAt;
 
-//  @Consumption.filter.hidden: true
+  @Consumption.filter.hidden: true
   @UI.hidden: true
   LastChangedAt;
 }

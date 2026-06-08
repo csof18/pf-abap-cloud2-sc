@@ -1,4 +1,4 @@
-@AbapCatalog.viewEnhancementCategory: [#NONE]
+//@AbapCatalog.viewEnhancementCategory: #NONE
 @AccessControl.authorizationCheck: #NOT_REQUIRED
 @EndUserText.label: 'CDS Info del historial de los incidentes'
 @Metadata.ignorePropagatedAnnotations: true
@@ -7,8 +7,17 @@
                          sizeCategory: #S,
                          dataClass: #MIXED
                         }
-                        
  @ObjectModel.semanticKey: [ 'HisId' ]  
+
+@AbapCatalog.extensibility: { extensible: true,
+                              elementSuffix: 'ZAG',
+                              allowNewDatasources: false,
+                              dataSources: [ 'IncidentHis' ],
+                              quota: { maximumFields: 500,
+                                        maximumBytes: 50000 },
+                               allowNewCompositions: true }
+
+
 define view entity ZI_INCT_H_SC
   as select from zdt_inct_h_sc as IncidentHis
   association to parent ZI_INCT_SC as _Incident on _Incident.IncUuid = $projection.IncUuid
