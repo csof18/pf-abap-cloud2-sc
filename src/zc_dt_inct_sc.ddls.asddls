@@ -4,12 +4,20 @@
 @Metadata.ignorePropagatedAnnotations: true
 @Metadata.allowExtensions: true
 @Search.searchable: true
-
+@AbapCatalog.extensibility: { extensible: true,
+                              dataSources: [ 'Incident' ],
+                              elementSuffix: 'ZAG',
+//                              allowNewDatasources: false,
+                              allowNewCompositions: true,
+                              quota: { maximumFields: 500,
+                                       maximumBytes: 5000
+                                     }
+                             }
 
 define root view entity ZC_DT_INCT_SC
   provider contract transactional_query
   //provider contract transactional_interface
-  as projection on ZI_INCT_SC
+  as projection on ZI_INCT_SC as Incident
 {
       @Search.ranking: #HIGH
   key IncUuid,

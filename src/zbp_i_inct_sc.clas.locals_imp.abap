@@ -90,7 +90,7 @@ CLASS lhc_Incident IMPLEMENTATION.
 *  leer la entidad + datos
     READ ENTITIES OF zi_inct_sc IN LOCAL MODE
     ENTITY Incident
-    FIELDS ( Status  )
+    FIELDS ( Status )
       WITH CORRESPONDING #( keys )
       RESULT DATA(incidents)            "recuperar todos los incidentes
       FAILED failed.                     "posibles fallos se puede declarar una variable, aunque no es necesario en este caso porque tiene failed
@@ -264,22 +264,14 @@ CLASS lhc_Incident IMPLEMENTATION.
 * leer incidente actual
     READ ENTITIES OF zi_inct_sc IN LOCAL MODE
     ENTITY Incident
-    FIELDS ( Status ChangedDate )
+    FIELDS ( Status ChangedDate zzresponzag )
     WITH CORRESPONDING #( keys )
     RESULT DATA(incidents).
-
-**    AGREGANDO RESPONSABLE
-*    READ ENTITIES OF zi_inct_sc IN LOCAL MODE
-*    ENTITY Incident
-*    FIELDS ( Status ChangedDate Responsable)
-*    WITH CORRESPONDING #( keys )
-*    RESULT DATA(incidents).
-**    AGREGANDO RESPONSABLE
 
 *    DATA status_prob TYPE zdt_status_sc-status_code.
     DATA(lv_next_his_id) = get_next_history_id(  ).
 
-*    DATA(lv_current_user) = cl_abap_context_info=>get_user_technical_name( ).      " AGREGANDO RESPONSABLE
+    DATA(lv_current_user) = cl_abap_context_info=>get_user_technical_name( ).      " AGREGANDO RESPONSABLE
 
 
 *    validacion  y preparar cambios
@@ -300,9 +292,8 @@ CLASS lhc_Incident IMPLEMENTATION.
 
       DATA(new_status)      = ls_key-%param-NewStatus.
       DATA(new_text_status) = ls_key-%param-Observation.
-*      AGREGANDO RESPONSABLE
-*      DATA(new_responsable) = ls_key-%param-Responsable.  " <-- nuevo
-*
+      DATA(new_responsible) = ls_key-%param-Responsible.
+
 *      " Validar autorización: solo responsable asignado o admin
 *      IF <incident>-Responsable IS NOT INITIAL           " <-- nuevo bloque
 *      AND <incident>-Responsable NE lv_current_user
@@ -317,6 +308,37 @@ CLASS lhc_Incident IMPLEMENTATION.
 *        CONTINUE.
 *      ENDIF.
 *      AGREGANDO RESPONSABLE
+*   validar responsable
+
+
+      IF new_status = status_code-status_ip
+      AND new_responsible IS INITIAL.
+*      AND <incident>-zzresponzag IS INITIAL.
+        APPEND VALUE #( %tky = <incident>-%tky ) TO failed-incident.
+        APPEND VALUE #( %tky = <incident>-%tky
+                        %msg = new_message_with_text(
+                               severity = if_abap_behv_message=>severity-error
+                               text = 'Debe asignar un responsable' )
+                               %element-Status = if_abap_behv=>mk-on  "PROBAR - ANDA??
+                      ) TO reported-incident.
+        CONTINUE.
+      ENDIF.
+
+*      IF new_status NE status_code-status_ip.
+*        new_responsible = if_abap_behv=>fc-o-disabled.
+*      ELSE.
+*        new_responsible = if_abap_behv=>fc-o-enabled.
+*        APPEND VALUE #( %tky = <incident>-%tky ) TO failed-incident.
+*        APPEND VALUE #( %tky = <incident>-%tky
+*                        %msg = new_message_with_text(
+*                               severity = if_abap_behv_message=>severity-error
+*                               text = 'Debe asignar un responsable' )
+*                               %element-Status = if_abap_behv=>mk-on  "PROBAR - ANDA??
+*
+*                      ) TO reported-incident.
+*        CONTINUE.
+*      ENDIF.
+*   validar responsable
 
 *   validar cambios de estado
       IF <incident>-Status   = status_code-status_cn
@@ -348,6 +370,7 @@ CLASS lhc_Incident IMPLEMENTATION.
         CONTINUE.
       ENDIF.
 
+
 *   estado igual al actual
       IF <incident>-Status = new_status.
         APPEND VALUE #( %tky = <incident>-%tky
@@ -363,45 +386,11 @@ CLASS lhc_Incident IMPLEMENTATION.
 
       ENDIF.
 
-**      AGREGANDO RESPONSABLE
-      " Si nuevo estado es IP, responsable es obligatorio
-*      IF new_status = status_code-status_ip
-*      AND new_responsable IS INITIAL.
-*        APPEND VALUE #( %tky = <incident>-%tky ) TO failed-incident.
-*        APPEND VALUE #( %tky = <incident>-%tky
-*                        %msg = new_message_with_text(
-*                                 severity = if_abap_behv_message=>severity-error
-*                                 text     = 'Debe asignar un Responsable para pasar a In Progress' )
-*                        %element-Status = if_abap_behv=>mk-on
-*                      ) TO reported-incident.
-*        CONTINUE.
-*      ENDIF.
-**      AGREGANDO RESPONSABLE
-
-** Si pasa a In Progress debe tener responsable
-*      IF new_status = status_code-status_ip
-*      AND <incident>-Responsible IS INITIAL.
-*
-*        APPEND VALUE #( %tky = <incident>-%tky )
-*          TO failed-incident.
-*
-*        APPEND VALUE #(
-*            %tky = <incident>-%tky
-*            %msg = new_message_with_text(
-*                      severity = if_abap_behv_message=>severity-error
-*                      text = 'Debe asignar un responsable antes de pasar a In Progress' )
-*            %element-Responsible = if_abap_behv=>mk-on
-*          ) TO reported-incident.
-*
-*        CONTINUE.
-*
-*      ENDIF.
-
 *      preparar update status del incidente
       APPEND VALUE #( %tky   = <incident>-%tky
                       status = new_status
                       ChangedDate = cl_abap_context_info=>get_system_date(  )
-*                      Responsable = new_responsable            "AGREGAR RESPONSABLE
+                      zzresponzag = new_responsible            "AGREGAR RESPONSABLE
                      ) TO status_for_update.
 
 *     preparar creacion del historial
@@ -426,8 +415,7 @@ CLASS lhc_Incident IMPLEMENTATION.
     IF status_for_update IS NOT INITIAL.
       MODIFY ENTITIES OF zi_inct_sc IN LOCAL MODE
       ENTITY Incident
-      UPDATE FIELDS ( Status ChangedDate )
-*      UPDATE FIELDS ( Status ChangedDate Responsable )      "AGREGAR RESPONSABLE
+      UPDATE FIELDS ( Status ChangedDate zzresponzag )
       WITH status_for_update.
 
     ENDIF.

@@ -101,6 +101,7 @@ annotate entity ZC_DT_INCT_SC with
                       label: 'Description' }],
          identification: [{ position: 40 }]
         }
+  @Consumption.filter.hidden: true
   //  @UI.hidden: true
   Description;
 
@@ -155,16 +156,25 @@ annotate entity ZC_DT_INCT_SC with
   //                                       useForValidation: true
                                       }]
   ChangedDate;
+ 
+  @UI: {  lineItem: [{ position: 80,
+                       importance: #LOW,
+                       label: 'Responsible' }],
+        identification: [{ position: 80 }]
+      }
+//  @Consumption.filter.hidden: true
+//  @UI.hidden: true
+  zzresponzag;
 
-    @Consumption.filter.hidden: true
+  @Consumption.filter.hidden: true
   @UI.hidden: true
   LocalCreatedBy;
 
-    @Consumption.filter.hidden: true
+  @Consumption.filter.hidden: true
   @UI.hidden: true
   LocalCreatedAt;
 
-    @Consumption.filter.hidden: true
+  @Consumption.filter.hidden: true
   @UI.hidden: true
   LocalLastChangedBy;
 
@@ -175,6 +185,15 @@ annotate entity ZC_DT_INCT_SC with
   @Consumption.filter.hidden: true
   @UI.hidden: true
   LastChangedAt;
+
+  @Consumption.filter.hidden: true
+  @UI.hidden: true
+  StatusText;
+
+  @Consumption.filter.hidden: true
+  @UI.hidden: true
+  PriorityText;
+  
 }
 //@Metadata.layer: #CORE
 //@UI.headerInfo: {
