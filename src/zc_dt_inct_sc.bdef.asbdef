@@ -1,8 +1,10 @@
  projection;
  strict ( 2 );
  use draft;
+ extensible;
 
  define behavior for ZC_DT_INCT_SC alias Incident
+ extensible
  {
    use create;
    use update;

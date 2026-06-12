@@ -2,11 +2,12 @@ managed implementation in class zbp_i_inct_sc unique;
 strict ( 2 );
 with draft;
 
-//extensible { with additional save;
-//            with determinations on modify;
-//            with validations on save;
-//            with determinations on save;
-//            }
+extensible
+{ with additional save;
+  with determinations on modify;
+  with validations on save;
+  with determinations on save;
+}
 
 define behavior for ZI_INCT_SC alias Incident
 persistent table zdt_inct_sc
@@ -16,17 +17,18 @@ lock master
 total etag LastChangedAt
 etag master LocalLastChangedAt
 authorization master ( global, instance )
+extensible
 {
   create ( authorization : global );
   update;
-//  delete ( precheck );
+  //  delete ( precheck );
   delete;
   field ( numbering : managed, readonly ) IncUuid;
 
   //  Campos solo lectura
   field ( readonly ) IncidentId,
   Status,       // validar si va o no este
-   ChangedDate, //??
+  ChangedDate, //??
   CreationDate,
   LocalCreatedBy,
   LocalCreatedAt,
@@ -94,7 +96,7 @@ authorization master ( global, instance )
     validation validationIncident;
     validation validateDateRange;
     validation validateDateFuture;
-//    validation validateStatusChange;
+    //    validation validateStatusChange;
     validation validationStatus;
     validation validationPriorityCode;
   }

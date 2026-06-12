@@ -118,6 +118,7 @@ CLASS lhc_Incident IMPLEMENTATION.
                                                                                    OR incident-Status = status_code-status_cl
                                                                                  THEN if_abap_behv=>fc-o-disabled
                                                                                  ELSE if_abap_behv=>fc-o-enabled )
+
                                                   ) ).
 
   ENDMETHOD.
@@ -230,8 +231,8 @@ CLASS lhc_Incident IMPLEMENTATION.
     LOOP AT keys ASSIGNING FIELD-SYMBOL(<keys>)
     WHERE %param-NewStatus IS INITIAL
     OR %param-Observation IS INITIAL.
+*    OR %param-Responsible IS INITIAL.       "validar??
       lv_error = abap_true.
-
       APPEND VALUE #( %tky = <keys>-%tky ) TO failed-incident.
 
       APPEND VALUE #( %tky = <keys>-%tky
@@ -258,9 +259,7 @@ CLASS lhc_Incident IMPLEMENTATION.
 
 *   si hay error corta
     CHECK lv_error NE abap_true.
-*    CHECK lv_error IS INITIAL.
 
-*status_for_update[ 1 ]
 * leer incidente actual
     READ ENTITIES OF zi_inct_sc IN LOCAL MODE
     ENTITY Incident
@@ -268,16 +267,12 @@ CLASS lhc_Incident IMPLEMENTATION.
     WITH CORRESPONDING #( keys )
     RESULT DATA(incidents).
 
-*    DATA status_prob TYPE zdt_status_sc-status_code.
     DATA(lv_next_his_id) = get_next_history_id(  ).
 
-    DATA(lv_current_user) = cl_abap_context_info=>get_user_technical_name( ).      " AGREGANDO RESPONSABLE
 
 
 *    validacion  y preparar cambios
     LOOP AT incidents ASSIGNING FIELD-SYMBOL(<incident>).
-*      DATA(new_status) = keys[ KEY id %tky = <incident>-%tky ]-%param-NewStatus.
-*      DATA(new_text_status) = keys[ KEY id %tky = <incident>-%tky ]-%param-Observation.
 
 *   prueba validacion
       DATA(ls_key) = VALUE #( keys[ KEY id
@@ -286,43 +281,41 @@ CLASS lhc_Incident IMPLEMENTATION.
 ****                                                 %tky = <incident>-%tky ] OPTIONAL ).
       CHECK ls_key IS NOT INITIAL.
 
-****      IF ls_key IS INITIAL.
-****        CONTINUE.
-****      ENDIF.
-
       DATA(new_status)      = ls_key-%param-NewStatus.
       DATA(new_text_status) = ls_key-%param-Observation.
       DATA(new_responsible) = ls_key-%param-Responsible.
 
+      DATA(lv_current_user) = cl_abap_context_info=>get_user_technical_name( ).      " AGREGANDO RESPONSABLE
 *      " Validar autorización: solo responsable asignado o admin
-*      IF <incident>-Responsable IS NOT INITIAL           " <-- nuevo bloque
-*      AND <incident>-Responsable NE lv_current_user
-*      AND lv_current_user        NE gc_admin_user.
-*        APPEND VALUE #( %tky = <incident>-%tky ) TO failed-incident.
-*        APPEND VALUE #( %tky = <incident>-%tky
-*                        %msg = new_message_with_text(
-*                                 severity = if_abap_behv_message=>severity-error
-*                                 text     = 'Solo el responsable asignado o un administrador puede cambiar el estado' )
-*                        %element-Status = if_abap_behv=>mk-on
-*                      ) TO reported-incident.
-*        CONTINUE.
-*      ENDIF.
+      IF <incident>-zzresponzag IS INITIAL           " <-- nuevo bloque
+      OR <incident>-zzresponzag NE lv_current_user.
+*      AND <incident>-zzresponzag NE lv_current_user.
+        APPEND VALUE #( %tky = <incident>-%tky ) TO failed-incident.
+        APPEND VALUE #( %tky = <incident>-%tky
+                        %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                      text     = 'Solo el responsable o Administrador puede cambiar el estado' )
+                        %element-Status = if_abap_behv=>mk-on
+                        %element-zzresponzag = if_abap_behv=>mk-on
+                      ) TO reported-incident.
+        CONTINUE.
+      ENDIF.
 *      AGREGANDO RESPONSABLE
 *   validar responsable
 
 
       IF new_status = status_code-status_ip
-      AND new_responsible IS INITIAL.
-*      AND <incident>-zzresponzag IS INITIAL.
+      AND new_responsible IS INITIAL
+      AND <incident>-zzresponzag IS INITIAL.
         APPEND VALUE #( %tky = <incident>-%tky ) TO failed-incident.
         APPEND VALUE #( %tky = <incident>-%tky
                         %msg = new_message_with_text(
                                severity = if_abap_behv_message=>severity-error
                                text = 'Debe asignar un responsable' )
-                               %element-Status = if_abap_behv=>mk-on  "PROBAR - ANDA??
+                               %element-zzresponzag = if_abap_behv=>mk-on
                       ) TO reported-incident.
         CONTINUE.
       ENDIF.
+
 
 *      IF new_status NE status_code-status_ip.
 *        new_responsible = if_abap_behv=>fc-o-disabled.
@@ -385,12 +378,19 @@ CLASS lhc_Incident IMPLEMENTATION.
         CONTINUE.
 
       ENDIF.
+*   responsable actualizado
+      DATA(lv_responsible) = COND #( WHEN new_status = status_code-status_ip
+                                     AND new_responsible IS NOT INITIAL
+                                     THEN new_responsible
+                                     ELSE <incident>-zzresponzag ).
+*   responsable actualizado
 
 *      preparar update status del incidente
       APPEND VALUE #( %tky   = <incident>-%tky
                       status = new_status
                       ChangedDate = cl_abap_context_info=>get_system_date(  )
-                      zzresponzag = new_responsible            "AGREGAR RESPONSABLE
+                      zzresponzag = lv_responsible            "AGREGAR RESPONSABLE
+*                      zzresponzag = new_responsible            "AGREGAR RESPONSABLE
                      ) TO status_for_update.
 
 *     preparar creacion del historial
@@ -487,6 +487,7 @@ CLASS lhc_Incident IMPLEMENTATION.
                                                  Status          = status_code-status_op
                                                  CreationDate    = cl_abap_context_info=>get_system_date(  )
                                                  ChangedDate     = cl_abap_context_info=>get_system_date(  )
+                                                 zzresponzag     = if_abap_behv=>fc-f-read_only
                                                  ) ).    "maneja la clave tecnica->necesita la clave tencica para identificar los registros afectados
 
   ENDMETHOD.
