@@ -24,13 +24,9 @@
    }
 
    use association _Historial { with draft; }
-   //  use association _Historial { create; with draft; }
  }
 
  define behavior for ZC_DT_INCT_H_SC alias IncidentHis
  {
-//   use update;
-//   use delete;
-
    use association _Incident { with draft; }
  }

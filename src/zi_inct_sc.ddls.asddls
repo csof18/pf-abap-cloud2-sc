@@ -1,9 +1,7 @@
 @AccessControl.authorizationCheck: #NOT_REQUIRED
 @EndUserText.label: 'CDS - Info basica de incidentes'
 @Metadata.ignorePropagatedAnnotations: true
-//@Metadata.allowExtensions: true     //va o no???
 @ObjectModel.semanticKey: [ 'IncidentId' ]
-
 @AbapCatalog.extensibility: { extensible: true,
                               dataSources: [ 'Incident' ],
                               elementSuffix: 'ZAG',
@@ -16,7 +14,7 @@ define root view entity ZI_INCT_SC
   as select from zdt_inct_sc as Incident
 
   composition [0..*] of ZI_INCT_H_SC   as _Historial
-  
+
   association [1..1] to ZI_STATUS_SC   as _Status   on _Status.StatusCode = $projection.Status
   association [1..1] to ZI_PRIORITY_SC as _Priority on _Priority.PriorityCode = $projection.Priority
 {

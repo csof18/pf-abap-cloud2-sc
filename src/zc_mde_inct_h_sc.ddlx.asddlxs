@@ -1,11 +1,10 @@
 @Metadata.layer: #CUSTOMER
-//@Metadata.layer: #CORE
 @UI: { headerInfo: { typeName: 'History',
                      typeNamePlural: 'History',
                      title: { type: #STANDARD,
                               value: 'HisId' },
                               description: { type: #STANDARD,
-                                             label: 'History details',   //ver porque no se ve
+                                             label: 'History details',
                                              value: 'Text' }
                             },
        presentationVariant: [{ sortOrder: [{ by: 'HisId',
@@ -19,12 +18,12 @@
 @UI.deleteHidden: true
 annotate entity ZC_DT_INCT_H_SC with
 {
-    @UI.facet: [{ id: 'History',
-                  purpose: #STANDARD,
-                  type: #IDENTIFICATION_REFERENCE,
-                  label: 'History details',
-                  position: 10//,
-                }]
+  @UI.facet: [{ id: 'History',
+                purpose: #STANDARD,
+                type: #IDENTIFICATION_REFERENCE,
+                label: 'History details',
+                position: 10//,
+              }]
 
   @UI.identification: [{ label: 'IncUuid',position: 1 }]
   @UI.hidden: true
@@ -34,11 +33,11 @@ annotate entity ZC_DT_INCT_H_SC with
   @UI.hidden: true
   HisUuid;
 
-  @UI: {  lineItem: [{ position: 10,        
+  @UI: {  lineItem: [{ position: 10,
                      importance: #MEDIUM,
                      label: 'History ID' }],
-        identification: [{ position: 20,      
-                           label: 'History ID' }]  
+        identification: [{ position: 20,
+                           label: 'History ID' }]
       }
   HisId;
 

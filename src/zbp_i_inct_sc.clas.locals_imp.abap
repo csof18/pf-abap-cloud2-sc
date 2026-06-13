@@ -86,8 +86,6 @@ ENDCLASS.
 CLASS lhc_Incident IMPLEMENTATION.
 
   METHOD get_instance_features.
-*   controlar dinamicamente que hace cada cosa segun el estado de cada registro.
-*  leer la entidad + datos
     READ ENTITIES OF zi_inct_sc IN LOCAL MODE
     ENTITY Incident
     FIELDS ( Status )
@@ -95,7 +93,7 @@ CLASS lhc_Incident IMPLEMENTATION.
       RESULT DATA(incidents)
       FAILED failed.
 
-*   configuracion comportamiento dinamico po instancia
+*   configuracion comportamiento dinamico por instancia
     result = VALUE #( FOR incident IN incidents ( %tky          = incident-%tky
                                                   %action-ChangeStatus = COND #( WHEN incident-%is_draft = if_abap_behv=>mk-on
                                                                                  THEN if_abap_behv=>fc-o-disabled
@@ -169,7 +167,6 @@ CLASS lhc_Incident IMPLEMENTATION.
           history_to_create TYPE TABLE FOR CREATE zi_inct_sc\_Historial,
           lv_error          TYPE abap_boolean.
 
-*   sientra por le loop tenemos un error, si no entra no hay error y sigue con la logica
 *  validar param obligatorios
     LOOP AT keys ASSIGNING FIELD-SYMBOL(<keys>)
     WHERE %param-NewStatus IS INITIAL
@@ -181,11 +178,10 @@ CLASS lhc_Incident IMPLEMENTATION.
                       %msg = new_message_with_text(
                              severity = if_abap_behv_message=>severity-error
                              text = 'Campos Nuevo Estado y Observación incompletos' )
-                             %element-Status = if_abap_behv=>mk-on  "PROBAR - ANDA??
+                             %element-Status = if_abap_behv=>mk-on
                     ) TO reported-incident.
     ENDLOOP.
 
-*   si hay error corta
     CHECK lv_error NE abap_true.
 
 * leer incidente actual
@@ -202,7 +198,6 @@ CLASS lhc_Incident IMPLEMENTATION.
 *    validacion  y preparar cambios
     LOOP AT incidents ASSIGNING FIELD-SYMBOL(<incident>).
 
-*   prueba validacion
       DATA(ls_key) = VALUE #( keys[ KEY id
                                     %tky = <incident>-%tky ] OPTIONAL ).
       CHECK ls_key IS NOT INITIAL.
@@ -212,406 +207,394 @@ CLASS lhc_Incident IMPLEMENTATION.
       DATA(new_responsible) = ls_key-%param-Responsible.
       DATA(lv_current_user) = cl_abap_context_info=>get_user_technical_name( ).
 
-DATA(lv_responsible) = COND #( WHEN new_responsible IS NOT INITIAL
-                               THEN new_responsible
-                               ELSE <incident>-zzresponzag ).
+      DATA(lv_responsible) = COND #( WHEN new_responsible IS NOT INITIAL
+                                     THEN new_responsible
+                                     ELSE <incident>-zzresponzag ).
 
-
-*      " Validar autorización: solo responsable asignado o admin
       IF <incident>-zzresponzag EQ lv_current_user.
 *        IF <incident>-zzresponzag NE lv_current_user.      "para probas mas facil deberia ir asi
-          APPEND VALUE #( %tky = <incident>-%tky ) TO failed-incident.
-          APPEND VALUE #( %tky = <incident>-%tky
-                          %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
-                                                        text     = 'Solo el responsable o Administrador puede cambiar el estado' )
-                          %element-Status = if_abap_behv=>mk-on
-                          %element-zzresponzag = if_abap_behv=>mk-on
-                        ) TO reported-incident.
-          CONTINUE.
-        ENDIF.
+        APPEND VALUE #( %tky = <incident>-%tky ) TO failed-incident.
+        APPEND VALUE #( %tky = <incident>-%tky
+                        %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                      text     = 'Solo el responsable o Administrador puede cambiar el estado' )
+                        %element-Status = if_abap_behv=>mk-on
+                        %element-zzresponzag = if_abap_behv=>mk-on
+                      ) TO reported-incident.
+        CONTINUE.
+      ENDIF.
 
-        IF new_status = status_code-status_ip
-        AND lv_responsible IS INITIAL.
-          APPEND VALUE #( %tky = <incident>-%tky ) TO failed-incident.
-          APPEND VALUE #( %tky = <incident>-%tky
-                          %msg = new_message_with_text(
-                                 severity = if_abap_behv_message=>severity-error
-                                 text = 'Debe asignar un responsable' )
-                                 %element-zzresponzag = if_abap_behv=>mk-on
-                        ) TO reported-incident.
-          CONTINUE.
-        ENDIF.
+      IF new_status = status_code-status_ip
+      AND lv_responsible IS INITIAL.
+        APPEND VALUE #( %tky = <incident>-%tky ) TO failed-incident.
+        APPEND VALUE #( %tky = <incident>-%tky
+                        %msg = new_message_with_text(
+                               severity = if_abap_behv_message=>severity-error
+                               text = 'Debe asignar un responsable' )
+                               %element-zzresponzag = if_abap_behv=>mk-on
+                      ) TO reported-incident.
+        CONTINUE.
+      ENDIF.
 
 *   validar cambios de estado
-        IF <incident>-Status   = status_code-status_cn
-          OR <incident>-Status = status_code-status_co
-          OR <incident>-Status = status_code-status_cl.
+      IF <incident>-Status   = status_code-status_cn
+        OR <incident>-Status = status_code-status_co
+        OR <incident>-Status = status_code-status_cl.
 
-          APPEND VALUE #( %tky = <incident>-%tky ) TO failed-incident.
-          APPEND VALUE #( %tky = <incident>-%tky
-                          %msg = new_message_with_text(
-                                 severity        = if_abap_behv_message=>severity-error
-                                 text            = 'No se puede cambiar el estado del incidente' )
-                                 %element-Status = if_abap_behv=>mk-on  "PROBAR - ANDA??
-                        ) TO reported-incident.
+        APPEND VALUE #( %tky = <incident>-%tky ) TO failed-incident.
+        APPEND VALUE #( %tky = <incident>-%tky
+                        %msg = new_message_with_text(
+                               severity        = if_abap_behv_message=>severity-error
+                               text            = 'No se puede cambiar el estado del incidente' )
+                               %element-Status = if_abap_behv=>mk-on  "PROBAR - ANDA??
+                      ) TO reported-incident.
 
-          CONTINUE.
-        ENDIF.
+        CONTINUE.
+      ENDIF.
 
 *    PE no puede ir a  CL ni CO
-        IF <incident>-Status = status_code-status_pe AND ( new_status = status_code-status_co
-                                                      OR   new_status = status_code-status_cl ) .
+      IF <incident>-Status = status_code-status_pe AND ( new_status = status_code-status_co
+                                                    OR   new_status = status_code-status_cl ) .
 
-          APPEND VALUE #( %tky = <incident>-%tky ) TO failed-incident.
-          APPEND VALUE #( %tky = <incident>-%tky
-                          %msg = new_message_with_text(
-                                 severity = if_abap_behv_message=>severity-error
-                                 text = 'Un incidente Pending no puede ser Completed o Closed' )
-                                 %element-Status = if_abap_behv=>mk-on  "PROBAR - ANDA??
-                        ) TO reported-incident.
-          CONTINUE.
-        ENDIF.
+        APPEND VALUE #( %tky = <incident>-%tky ) TO failed-incident.
+        APPEND VALUE #( %tky = <incident>-%tky
+                        %msg = new_message_with_text(
+                               severity = if_abap_behv_message=>severity-error
+                               text = 'Un incidente Pending no puede ser Completed o Closed' )
+                               %element-Status = if_abap_behv=>mk-on  "PROBAR - ANDA??
+                      ) TO reported-incident.
+        CONTINUE.
+      ENDIF.
 
 
 *   estado igual al actual
-        IF <incident>-Status = new_status.
-          APPEND VALUE #( %tky = <incident>-%tky ) TO failed-incident.
-          APPEND VALUE #( %tky = <incident>-%tky
-                          %msg = new_message_with_text(
-                                 severity = if_abap_behv_message=>severity-error
-                                 text = 'El nuevo estado debe ser diferente al actual' )
-                                 %element-Status = if_abap_behv=>mk-on
-                        ) TO reported-incident.
+      IF <incident>-Status = new_status.
+        APPEND VALUE #( %tky = <incident>-%tky ) TO failed-incident.
+        APPEND VALUE #( %tky = <incident>-%tky
+                        %msg = new_message_with_text(
+                               severity = if_abap_behv_message=>severity-error
+                               text = 'El nuevo estado debe ser diferente al actual' )
+                               %element-Status = if_abap_behv=>mk-on
+                      ) TO reported-incident.
 
 
-          CONTINUE.
+        CONTINUE.
 
-        ENDIF.
-
-*   responsable actualizado
+      ENDIF.
 
 *      preparar update status del incidente
-        APPEND VALUE #( %tky   = <incident>-%tky
-                        status = new_status
-                        ChangedDate = cl_abap_context_info=>get_system_date(  )
-                        zzresponzag = lv_responsible            "AGREGAR RESPONSABLE
-*                      zzresponzag = new_responsible            "AGREGAR RESPONSABLE
-                       ) TO status_for_update.
+      APPEND VALUE #( %tky   = <incident>-%tky
+                      status = new_status
+                      ChangedDate = cl_abap_context_info=>get_system_date(  )
+                      zzresponzag = lv_responsible
+                     ) TO status_for_update.
 
 *     preparar creacion del historial
-        DATA(lv_idx) = sy-tabix.
-        APPEND VALUE #( %tky = <incident>-%tky
-                        %target = VALUE #( ( %cid = |HIS_{ lv_idx }|
-                        HisId          = lv_next_his_id + lv_idx - 1
-                        PreviousStatus = <incident>-Status
-                        NewStatus      = new_status
-                        Text           = new_text_status
-                        %control       = VALUE #(  HisId           = if_abap_behv=>mk-on
-                                                    PreviousStatus  = if_abap_behv=>mk-on
-                                                    NewStatus       = if_abap_behv=>mk-on
-                                                    Text            = if_abap_behv=>mk-on
-                                                   )
-                                               ) )
-                       ) TO history_to_create.
+      DATA(lv_idx) = sy-tabix.
+      APPEND VALUE #( %tky = <incident>-%tky
+                      %target = VALUE #( ( %cid = |HIS_{ lv_idx }|
+                      HisId          = lv_next_his_id + lv_idx - 1
+                      PreviousStatus = <incident>-Status
+                      NewStatus      = new_status
+                      Text           = new_text_status
+                      %control       = VALUE #(  HisId           = if_abap_behv=>mk-on
+                                                  PreviousStatus  = if_abap_behv=>mk-on
+                                                  NewStatus       = if_abap_behv=>mk-on
+                                                  Text            = if_abap_behv=>mk-on
+                                                 )
+                                             ) )
+                     ) TO history_to_create.
 
-      ENDLOOP.
+    ENDLOOP.
 
 *    Actualizar cambios solo si hay registros validos
-      IF status_for_update IS NOT INITIAL.
-        MODIFY ENTITIES OF zi_inct_sc IN LOCAL MODE
-        ENTITY Incident
-        UPDATE FIELDS ( Status ChangedDate zzresponzag )
-        WITH status_for_update.
+    IF status_for_update IS NOT INITIAL.
+      MODIFY ENTITIES OF zi_inct_sc IN LOCAL MODE
+      ENTITY Incident
+      UPDATE FIELDS ( Status ChangedDate zzresponzag )
+      WITH status_for_update.
 
-      ENDIF.
+    ENDIF.
 
 *   crear historial
-      IF history_to_create IS NOT INITIAL.
-        MODIFY ENTITIES OF zi_inct_sc IN LOCAL MODE
-        ENTITY Incident
-        CREATE BY \_Historial
-        FROM history_to_create.
-      ENDIF.
+    IF history_to_create IS NOT INITIAL.
+      MODIFY ENTITIES OF zi_inct_sc IN LOCAL MODE
+      ENTITY Incident
+      CREATE BY \_Historial
+      FROM history_to_create.
+    ENDIF.
 
 *   devolver resultados
-      READ ENTITIES OF zi_inct_sc IN LOCAL MODE
-      ENTITY Incident
-      ALL FIELDS WITH CORRESPONDING #( keys )
-      RESULT DATA(inc_result).
+    READ ENTITIES OF zi_inct_sc IN LOCAL MODE
+    ENTITY Incident
+    ALL FIELDS WITH CORRESPONDING #( keys )
+    RESULT DATA(inc_result).
 
-      result = VALUE #( FOR incident IN inc_result ( %tky  = incident-%tky
-                                                     %param = incident ) ).
+    result = VALUE #( FOR incident IN inc_result ( %tky  = incident-%tky
+                                                   %param = incident ) ).
 
-    ENDMETHOD.
+  ENDMETHOD.
 
-    METHOD setIncident.
+  METHOD setIncident.
 
-**  lectura dentro de un read entity
-      READ ENTITIES OF zi_inct_sc IN LOCAL MODE
-      ENTITY Incident
-      ALL FIELDS WITH CORRESPONDING #( keys )
-        RESULT DATA(incidents).
-
-* obteniendo el siguiente ID
-      DATA(lv_max_id) = get_next_incident_id(  ).
-
-*      modificacion
-*   siempre es el mismo punto de ingreso, el BDEF la definicion que hice anteriormente
-      MODIFY ENTITIES OF zi_inct_sc IN LOCAL MODE
-      ENTITY Incident
-      UPDATE FIELDS ( IncidentId Status CreationDate ChangedDate )
-      "datos registros que se verian afectados for -> declarar una estructura para navegar o iterar o indicar lo que seria la declaracion de una variable que seria una estructura
-      WITH VALUE #( FOR key IN keys INDEX INTO i ( %tky            = key-%tky
-                                                   IncidentId      = lv_max_id + i - 1
-                                                   Status          = status_code-status_op
-                                                   CreationDate    = cl_abap_context_info=>get_system_date(  )
-                                                   ChangedDate     = cl_abap_context_info=>get_system_date(  )
-                                                   ) ).    "maneja la clave tecnica->necesita la clave tencica para identificar los registros afectados
-
-    ENDMETHOD.
-
-    METHOD createInitialHistory.
-
-      DATA lv_text_ini TYPE string VALUE 'First Incident'.
-      DATA(lv_next_his_id) = get_next_history_id(  ).
-
-      MODIFY ENTITIES OF zi_inct_sc IN LOCAL MODE
-      ENTITY Incident CREATE BY \_Historial
-      FROM VALUE #( FOR key IN keys INDEX INTO i ( %tky    = key-%tky
-                                                   %target = VALUE #( ( %cid           = |ID_{ i }|
-                                                                        HisId          = lv_next_his_id + i - 1
-                                                                        PreviousStatus = ''
-                                                                        NewStatus      = status_code-status_op
-                                                                        Text           = lv_text_ini
-                                                                        %control  = VALUE #( HisId            = if_abap_behv=>mk-on
-                                                                                             PreviousStatus   = if_abap_behv=>mk-on
-                                                                                             NewStatus        = if_abap_behv=>mk-on
-                                                                                             Text             = if_abap_behv=>mk-on
-                                                                                           )
-                                                                          ) )
-                                                     ) ).
-    ENDMETHOD.
-
-    METHOD validateDateFuture.
-      READ ENTITIES OF zi_inct_sc IN LOCAL MODE
-          ENTITY Incident
-          FIELDS ( ChangedDate )
-          WITH CORRESPONDING #( keys )
-          RESULT DATA(incidents).
-
-      LOOP AT incidents INTO DATA(incidente).
-        IF incidente-ChangedDate GT cl_abap_context_info=>get_system_date(  ).
-
-          APPEND VALUE #( %tky = incidente-%tky ) TO failed-incident.
-
-          APPEND VALUE #( %tky = incidente-%tky
-                          %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
-                                                        text     = 'Fecha de modificacion futura' )
-                           %element-ChangedDate = if_abap_behv=>mk-on
-                              ) TO reported-incident.
-        ENDIF.
-      ENDLOOP.
-
-    ENDMETHOD.
-
-    METHOD validateDateRange.
-
-      READ ENTITIES OF zi_inct_sc IN LOCAL MODE
-          ENTITY Incident
-          FIELDS ( CreationDate ChangedDate )
-          WITH CORRESPONDING #( keys )
-          RESULT DATA(incidents).
-
-      LOOP AT incidents INTO DATA(incidente).
-        IF incidente-ChangedDate IS INITIAL.
-          APPEND VALUE #( %tky = incidente-%tky ) TO failed-incident.
-          APPEND VALUE #( %tky = incidente-%tky
-                          %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
-                                                        text     = 'La fecha de modficacion debe contener un dato' )
-                           %element-ChangedDate = if_abap_behv=>mk-on
-                          ) TO reported-incident.
-
-        ENDIF.
-
-        IF  incidente-ChangedDate LT  incidente-CreationDate AND incidente-ChangedDate IS NOT INITIAL
-                                                            AND incidente-CreationDate IS NOT INITIAL.
-          APPEND VALUE #( %tky = incidente-%tky ) TO failed-incident.
-          APPEND VALUE #( %tky = incidente-%tky
-                          %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
-                                                        text     = 'No puede ser anterior a la fecha de creacion' )
-                           %element-CreationDate = if_abap_behv=>mk-on
-                           %element-ChangedDate = if_abap_behv=>mk-on
-                         ) TO reported-incident.
-
-
-        ENDIF.
-      ENDLOOP.
-    ENDMETHOD.
-
-    METHOD validateDeleteIncident.
-      READ ENTITIES OF zi_inct_sc IN LOCAL MODE
-      ENTITY Incident
-      FIELDS ( IncidentId Status )
-      WITH CORRESPONDING #( keys )
+*  lectura dentro de un read entity
+    READ ENTITIES OF zi_inct_sc IN LOCAL MODE
+    ENTITY Incident
+    ALL FIELDS WITH CORRESPONDING #( keys )
       RESULT DATA(incidents).
 
-      LOOP AT incidents INTO DATA(incidente).
-        IF incidente-Status NE status_code-status_op.
-          APPEND VALUE #( %tky = incidente-%tky ) TO failed-incident.
+* obteniendo el siguiente ID
+    DATA(lv_max_id) = get_next_incident_id(  ).
 
-          APPEND VALUE #( %tky = incidente-%tky
-                          %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
-                                                         text    = |El incidente { incidente-IncidentId } no se puede eliminar, unicamente con estado Open | )
-                          %element-Status = if_abap_behv=>mk-on ) TO reported-incident.
-        ENDIF.
+*      modificacion
+    MODIFY ENTITIES OF zi_inct_sc IN LOCAL MODE
+    ENTITY Incident
+    UPDATE FIELDS ( IncidentId Status CreationDate ChangedDate )
+    WITH VALUE #( FOR key IN keys INDEX INTO i ( %tky            = key-%tky
+                                                 IncidentId      = lv_max_id + i - 1
+                                                 Status          = status_code-status_op
+                                                 CreationDate    = cl_abap_context_info=>get_system_date(  )
+                                                 ChangedDate     = cl_abap_context_info=>get_system_date(  )
+                                                 ) ).    "maneja la clave tecnica->necesita la clave tencica para identificar los registros afectados
 
-      ENDLOOP.
-    ENDMETHOD.
+  ENDMETHOD.
 
-    METHOD validationIncident.
-      READ ENTITIES OF zi_inct_sc IN LOCAL MODE
-         ENTITY Incident
-         FIELDS ( Title Description Priority Status CreationDate )
-         WITH CORRESPONDING #( keys )
-         RESULT DATA(incidents).
+  METHOD createInitialHistory.
 
-      LOOP AT incidents INTO DATA(incident).
-        IF incident-Title IS INITIAL.
-          APPEND VALUE #( %tky = incident-%tky ) TO failed-incident.
-          APPEND VALUE #( %tky = incident-%tky
-                          %msg = new_message_with_text(
-                                   severity = if_abap_behv_message=>severity-error
-                                   text     = 'El campo Title es obligatorio' )
-                          %element-Title = if_abap_behv=>mk-on
+    DATA lv_text_ini TYPE string VALUE 'First Incident'.
+    DATA(lv_next_his_id) = get_next_history_id(  ).
+
+    MODIFY ENTITIES OF zi_inct_sc IN LOCAL MODE
+    ENTITY Incident CREATE BY \_Historial
+    FROM VALUE #( FOR key IN keys INDEX INTO i ( %tky    = key-%tky
+                                                 %target = VALUE #( ( %cid           = |ID_{ i }|
+                                                                      HisId          = lv_next_his_id + i - 1
+                                                                      PreviousStatus = ''
+                                                                      NewStatus      = status_code-status_op
+                                                                      Text           = lv_text_ini
+                                                                      %control  = VALUE #( HisId            = if_abap_behv=>mk-on
+                                                                                           PreviousStatus   = if_abap_behv=>mk-on
+                                                                                           NewStatus        = if_abap_behv=>mk-on
+                                                                                           Text             = if_abap_behv=>mk-on
+                                                                                         )
+                                                                        ) )
+                                                   ) ).
+  ENDMETHOD.
+
+  METHOD validateDateFuture.
+    READ ENTITIES OF zi_inct_sc IN LOCAL MODE
+        ENTITY Incident
+        FIELDS ( ChangedDate )
+        WITH CORRESPONDING #( keys )
+        RESULT DATA(incidents).
+
+    LOOP AT incidents INTO DATA(incidente).
+      IF incidente-ChangedDate GT cl_abap_context_info=>get_system_date(  ).
+
+        APPEND VALUE #( %tky = incidente-%tky ) TO failed-incident.
+
+        APPEND VALUE #( %tky = incidente-%tky
+                        %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                      text     = 'Fecha de modificacion futura' )
+                         %element-ChangedDate = if_abap_behv=>mk-on
+                            ) TO reported-incident.
+      ENDIF.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+  METHOD validateDateRange.
+
+    READ ENTITIES OF zi_inct_sc IN LOCAL MODE
+        ENTITY Incident
+        FIELDS ( CreationDate ChangedDate )
+        WITH CORRESPONDING #( keys )
+        RESULT DATA(incidents).
+
+    LOOP AT incidents INTO DATA(incidente).
+      IF incidente-ChangedDate IS INITIAL.
+        APPEND VALUE #( %tky = incidente-%tky ) TO failed-incident.
+        APPEND VALUE #( %tky = incidente-%tky
+                        %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                      text     = 'La fecha de modficacion debe contener un dato' )
+                         %element-ChangedDate = if_abap_behv=>mk-on
                         ) TO reported-incident.
-        ENDIF.
 
-        IF incident-Description IS INITIAL.
-          APPEND VALUE #( %tky = incident-%tky ) TO failed-incident.
-          APPEND VALUE #( %tky = incident-%tky
-                          %msg = new_message_with_text(
-                                   severity = if_abap_behv_message=>severity-error
-                                   text     = 'El campo Description es obligatorio' )
-                          %element-Description = if_abap_behv=>mk-on
-                        ) TO reported-incident.
-        ENDIF.
-      ENDLOOP.
-    ENDMETHOD.
+      ENDIF.
 
-    METHOD validationStatus.
+      IF  incidente-ChangedDate LT  incidente-CreationDate AND incidente-ChangedDate IS NOT INITIAL
+                                                          AND incidente-CreationDate IS NOT INITIAL.
+        APPEND VALUE #( %tky = incidente-%tky ) TO failed-incident.
+        APPEND VALUE #( %tky = incidente-%tky
+                        %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                      text     = 'No puede ser anterior a la fecha de creacion' )
+                         %element-CreationDate = if_abap_behv=>mk-on
+                         %element-ChangedDate = if_abap_behv=>mk-on
+                       ) TO reported-incident.
 
-      READ ENTITIES OF zi_inct_sc IN LOCAL MODE
-         ENTITY Incident
-         FIELDS ( Status )
-         WITH CORRESPONDING #( keys )
-         RESULT DATA(incidents).
 
-      DATA status TYPE SORTED TABLE OF zdt_status_sc WITH UNIQUE KEY client status_code.
+      ENDIF.
+    ENDLOOP.
+  ENDMETHOD.
 
-* transportar el status de la tabla a la que defini recien
-      status = CORRESPONDING #( incidents DISCARDING DUPLICATES MAPPING status_code = Status EXCEPT * ).      "con except* se indica que no importan las otras columnas
+  METHOD validateDeleteIncident.
+    READ ENTITIES OF zi_inct_sc IN LOCAL MODE
+    ENTITY Incident
+    FIELDS ( IncidentId Status )
+    WITH CORRESPONDING #( keys )
+    RESULT DATA(incidents).
+
+    LOOP AT incidents INTO DATA(incidente).
+      IF incidente-Status NE status_code-status_op.
+        APPEND VALUE #( %tky = incidente-%tky ) TO failed-incident.
+
+        APPEND VALUE #( %tky = incidente-%tky
+                        %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                       text    = |No se puede eliminar { incidente-IncidentId } solo si tiene estado Open | )
+                        %element-Status = if_abap_behv=>mk-on ) TO reported-incident.
+      ENDIF.
+
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD validationIncident.
+    READ ENTITIES OF zi_inct_sc IN LOCAL MODE
+       ENTITY Incident
+       FIELDS ( Title Description zzresponzag )
+       WITH CORRESPONDING #( keys )
+       RESULT DATA(incidents).
+
+    LOOP AT incidents INTO DATA(incident).
+      IF incident-Title IS INITIAL.
+        APPEND VALUE #( %tky = incident-%tky ) TO failed-incident.
+        APPEND VALUE #( %tky = incident-%tky
+                        %msg = new_message_with_text(
+                                 severity = if_abap_behv_message=>severity-error
+                                 text     = 'El campo Title es obligatorio' )
+                        %element-Title = if_abap_behv=>mk-on
+                      ) TO reported-incident.
+      ENDIF.
+
+      IF incident-Description IS INITIAL.
+        APPEND VALUE #( %tky = incident-%tky ) TO failed-incident.
+        APPEND VALUE #( %tky = incident-%tky
+                        %msg = new_message_with_text(
+                                 severity = if_abap_behv_message=>severity-error
+                                 text     = 'El campo Description es obligatorio' )
+                        %element-Description = if_abap_behv=>mk-on
+                      ) TO reported-incident.
+      ENDIF.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+  METHOD validationStatus.
+
+    READ ENTITIES OF zi_inct_sc IN LOCAL MODE
+       ENTITY Incident
+       FIELDS ( Status )
+       WITH CORRESPONDING #( keys )
+       RESULT DATA(incidents).
+
+    DATA status TYPE SORTED TABLE OF zdt_status_sc WITH UNIQUE KEY client status_code.
+
+*   transportar el status de la tabla
+    status = CORRESPONDING #( incidents DISCARDING DUPLICATES MAPPING status_code = Status EXCEPT * ).
 
 *    eliminar los registros que tengan el dato vacios
-      DELETE status WHERE status_code IS INITIAL.
+    DELETE status WHERE status_code IS INITIAL.
 
-* comprobar clientes de la tabla con los clientes la tabla interna que declare recien
-      IF status IS NOT INITIAL.
-        SELECT FROM zdt_status_sc AS ddbb
-        INNER JOIN @status AS http_req ON ddbb~status_code EQ http_req~status_code
-        FIELDS ddbb~status_code
-        INTO TABLE @DATA(valid_status).
-        ENDIF.
+*   comprobar clientes de la tabla con los clientes la tabla interna declarada
+    IF status IS NOT INITIAL.
+      SELECT FROM zdt_status_sc AS ddbb
+      INNER JOIN @status AS http_req ON ddbb~status_code EQ http_req~status_code
+      FIELDS ddbb~status_code
+      INTO TABLE @DATA(valid_status).
+    ENDIF.
 
-        LOOP AT incidents INTO DATA(incident).
-*    se considera como un error
-          IF incident-Status IS INITIAL.
+    LOOP AT incidents INTO DATA(incident).
+      IF incident-Status IS INITIAL.
 
-            APPEND VALUE #( %tky = incident-%tky ) TO failed-incident.
-            APPEND VALUE #( %tky = incident-%tky
-                            %msg = new_message_with_text(
-                                     severity = if_abap_behv_message=>severity-error
-                                     text     = 'El campo Status es obligatorio' )
-                            %element-Status = if_abap_behv=>mk-on
-                          ) TO reported-incident.
-*      si me pasaste un valor, y este valor no existe en la tabla de los status validos tambien tengo error
-          ELSEIF incident-Status IS NOT INITIAL AND NOT line_exists( valid_status[ status_code = incident-Status ]  ).
+        APPEND VALUE #( %tky = incident-%tky ) TO failed-incident.
+        APPEND VALUE #( %tky = incident-%tky
+                        %msg = new_message_with_text(
+                                 severity = if_abap_behv_message=>severity-error
+                                 text     = 'El campo Status es obligatorio' )
+                        %element-Status = if_abap_behv=>mk-on
+                      ) TO reported-incident.
+*      si el valor no es valido
+      ELSEIF incident-Status IS NOT INITIAL AND NOT line_exists( valid_status[ status_code = incident-Status ]  ).
 
-            APPEND VALUE #( %tky = incident-%tky ) TO failed-incident.
-            APPEND VALUE #( %tky = incident-%tky
-                           %msg = new_message_with_text(
-                                    severity = if_abap_behv_message=>severity-error
-                                    text     = 'El valor de Status no es válido' )
-                           %element-Status = if_abap_behv=>mk-on
-                         ) TO reported-incident.
-          ENDIF.
-        ENDLOOP.
+        APPEND VALUE #( %tky = incident-%tky ) TO failed-incident.
+        APPEND VALUE #( %tky = incident-%tky
+                       %msg = new_message_with_text(
+                                severity = if_abap_behv_message=>severity-error
+                                text     = 'El valor de Status no es válido' )
+                       %element-Status = if_abap_behv=>mk-on
+                     ) TO reported-incident.
+      ENDIF.
+    ENDLOOP.
+  ENDMETHOD.
 
+  METHOD validationPriorityCode.
+    READ ENTITIES OF zi_inct_sc IN LOCAL MODE
+     ENTITY Incident
+     FIELDS ( Priority )
+     WITH CORRESPONDING #( keys )
+     RESULT DATA(incidents).
 
-      ENDMETHOD.
+    DATA priority TYPE SORTED TABLE OF zdt_priority_sc WITH UNIQUE KEY client priority_code.
 
-      METHOD validationPriorityCode.
-        READ ENTITIES OF zi_inct_sc IN LOCAL MODE
-         ENTITY Incident
-         FIELDS ( Priority )
-         WITH CORRESPONDING #( keys )
-         RESULT DATA(incidents).
+    priority = CORRESPONDING #( incidents DISCARDING DUPLICATES MAPPING priority_code = Priority EXCEPT * ).      "con except* se indica que no importan las otras columnas
 
-        DATA priority TYPE SORTED TABLE OF zdt_priority_sc WITH UNIQUE KEY client priority_code.
+*   eliminar los registros que tengan el dato vacios
+    DELETE priority WHERE priority_code IS INITIAL.
 
-* transportar el status de la tabla a la que defini recien
-        priority = CORRESPONDING #( incidents DISCARDING DUPLICATES MAPPING priority_code = Priority EXCEPT * ).      "con except* se indica que no importan las otras columnas
+*   comprobar clientes de la tabla con los clientes la tabla interna
+    IF priority IS NOT INITIAL.
+      SELECT FROM zdt_priority_sc AS ddbb
+      INNER JOIN @priority AS http_req ON ddbb~priority_code EQ http_req~priority_code
+      FIELDS ddbb~priority_code
+      INTO TABLE @DATA(valid_priority).
+    ENDIF.
 
-*    eliminar los registros que tengan el dato vacios
-        DELETE priority WHERE priority_code IS INITIAL.
+    LOOP AT incidents INTO DATA(incident).
+      IF incident-Priority IS INITIAL.
 
-* comprobar clientes de la tabla con los clientes la tabla interna que declare recien
-        IF priority IS NOT INITIAL.
-          SELECT FROM zdt_priority_sc AS ddbb
-          INNER JOIN @priority AS http_req ON ddbb~priority_code EQ http_req~priority_code
-          FIELDS ddbb~priority_code
-          INTO TABLE @DATA(valid_priority).
-          ENDIF.
+        APPEND VALUE #( %tky = incident-%tky ) TO failed-incident.
+        APPEND VALUE #( %tky = incident-%tky
+                        %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                          text = 'El campo Priority es obligatorio' )
+                        %element-Priority = if_abap_behv=>mk-on
+                      ) TO reported-incident.
 
-          LOOP AT incidents INTO DATA(incident).
-*    se considera como un error
-            IF incident-Priority IS INITIAL.
+*   si el dato es equivocado
+      ELSEIF NOT line_exists( valid_priority[ priority_code = incident-Priority ]  ).
+        APPEND VALUE #( %tky = incident-%tky ) TO failed-incident.
 
-              APPEND VALUE #( %tky = incident-%tky ) TO failed-incident.
-*   indicar un mensaje de error
-              APPEND VALUE #( %tky = incident-%tky
-                              %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
-                                                                text = 'El campo Priority es obligatorio' )
-                              %element-Priority = if_abap_behv=>mk-on
-                            ) TO reported-incident.
+        APPEND VALUE #( %tky = incident-%tky
+                        %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                          text = 'El valor de Priority no es válido' )
+                        %element-Priority = if_abap_behv=>mk-on
+                      ) TO reported-incident.
+      ENDIF.
+    ENDLOOP.
 
-*      si me pasaste un valor, y este valor no existe en la tabla de los status validos tambien tengo error
-            ELSEIF NOT line_exists( valid_priority[ priority_code = incident-Priority ]  ).
-              APPEND VALUE #( %tky = incident-%tky ) TO failed-incident.
+  ENDMETHOD.
 
-              APPEND VALUE #( %tky = incident-%tky
-                              %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
-                                                                text = 'El valor de Priority no es válido' )
-                              %element-Priority = if_abap_behv=>mk-on
-                            ) TO reported-incident.
-            ENDIF.
-          ENDLOOP.
+  METHOD get_next_incident_id.
+    SELECT SINGLE FROM zdt_inct_sc
+     FIELDS MAX( incident_id )
+    INTO @DATA(lv_max_id).
 
-        ENDMETHOD.
+    rv_incident_id = lv_max_id + 1.
+  ENDMETHOD.
 
-        METHOD get_next_incident_id.
-          SELECT SINGLE FROM zdt_inct_sc
-           FIELDS MAX( incident_id )
-          INTO @DATA(lv_max_id).
+  METHOD get_next_history_id.
+    SELECT SINGLE FROM zdt_inct_h_sc
+     FIELDS MAX( his_id )
+    INTO @DATA(lv_max_his_id).
 
-            rv_incident_id = lv_max_id + 1.
-          ENDMETHOD.
-
-          METHOD get_next_history_id.
-            SELECT SINGLE FROM zdt_inct_h_sc
-             FIELDS MAX( his_id )
-            INTO @DATA(lv_max_his_id).
-
-              rv_history_id = lv_max_his_id + 1.
-            ENDMETHOD.
+    rv_history_id = lv_max_his_id + 1.
+  ENDMETHOD.
 
 ENDCLASS.

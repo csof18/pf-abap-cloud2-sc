@@ -33,6 +33,7 @@ define view entity ZC_DT_INCT_H_SC
       @Semantics.systemDateTime.lastChangedAt: true
       @Consumption.filter.hidden: true
       LastChangedAt,
+      
       /* Associations */
       _Incident : redirected to parent ZC_DT_INCT_SC
 }

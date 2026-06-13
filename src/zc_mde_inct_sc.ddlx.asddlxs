@@ -50,12 +50,12 @@ annotate entity ZC_DT_INCT_SC with
   IncUuid;
 
 
-  @UI: {  lineItem: [{ position: 10,            //VISTA
+  @UI: {  lineItem: [{ position: 10,
                        importance: #MEDIUM,
                        label: 'Incident Id' }],
-          selectionField: [{ position: 10 }],   //FILTRO
-          identification: [{ position: 20,      //DETALLE
-                             label: 'Incident Id' }]   //para que se vea en el detalle
+          selectionField: [{ position: 10 }],
+          identification: [{ position: 20,
+                             label: 'Incident Id' }]
         }
   @Consumption.valueHelpDefinition: [{ entity: { name: 'ZI_INCT_SC',
                                                  element: 'IncidentId' },
@@ -106,11 +106,11 @@ annotate entity ZC_DT_INCT_SC with
   }]
   Priority;
 
-  @UI: { lineItem: [{ position: 60,             //VISTA
+  @UI: { lineItem: [{ position: 60,
                       importance: #LOW,
                       label: 'Creation Date' }],
-         selectionField: [{ position: 40 }],   //FILTRO
-         identification: [{ position: 70,       //DETALLE
+         selectionField: [{ position: 40 }],
+         identification: [{ position: 70,
                             label: 'Creation Date' }]
       }
   @Consumption.valueHelpDefinition: [{ entity: { name: 'ZI_INCT_SC',
@@ -130,7 +130,7 @@ annotate entity ZC_DT_INCT_SC with
                                        useForValidation: true
                                       }]
   ChangedDate;
- 
+
   @UI: {  lineItem: [{ position: 80,
                        importance: #LOW,
                        label: 'Responsible' }],
@@ -166,5 +166,5 @@ annotate entity ZC_DT_INCT_SC with
   @Consumption.filter.hidden: true
   @UI.hidden: true
   PriorityText;
-  
+
 }

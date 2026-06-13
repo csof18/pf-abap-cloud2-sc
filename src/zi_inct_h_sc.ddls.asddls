@@ -1,4 +1,3 @@
-//@AbapCatalog.viewEnhancementCategory: #NONE
 @AccessControl.authorizationCheck: #NOT_REQUIRED
 @EndUserText.label: 'CDS Info del historial de los incidentes'
 @Metadata.ignorePropagatedAnnotations: true
@@ -7,7 +6,7 @@
                          sizeCategory: #S,
                          dataClass: #MIXED
                         }
- @ObjectModel.semanticKey: [ 'HisId' ]  
+@ObjectModel.semanticKey: [ 'HisId' ]
 
 @AbapCatalog.extensibility: { extensible: true,
                               elementSuffix: 'ZAG',
@@ -28,21 +27,21 @@ define view entity ZI_INCT_H_SC
       IncidentHis.previous_status       as PreviousStatus,
       IncidentHis.new_status            as NewStatus,
       IncidentHis.text                  as Text,
-      
+
       @Semantics.user.createdBy: true
       IncidentHis.local_created_by      as LocalCreatedBy,
-      
+
       @Semantics.systemDateTime.createdAt: true
       IncidentHis.local_created_at      as LocalCreatedAt,
-      
+
       @Semantics.user.localInstanceLastChangedBy: true
       IncidentHis.local_last_changed_by as LocalLastChangedBy,
-      
+
       @Semantics.systemDateTime.localInstanceLastChangedAt: true
       IncidentHis.local_last_changed_at as LocalLastChangedAt,
-      
+
       @Semantics.systemDateTime.lastChangedAt: true
       IncidentHis.last_changed_at       as LastChangedAt,
-     _Incident
+      _Incident
 
 }

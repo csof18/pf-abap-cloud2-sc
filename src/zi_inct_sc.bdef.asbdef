@@ -21,14 +21,13 @@ extensible
 {
   create ( authorization : global );
   update;
-  //  delete ( precheck );
   delete;
   field ( numbering : managed, readonly ) IncUuid;
 
   //  Campos solo lectura
   field ( readonly ) IncidentId,
-  Status,       // validar si va o no este
-  ChangedDate, //??
+  Status,
+  ChangedDate,
   CreationDate,
   LocalCreatedBy,
   LocalCreatedAt,
@@ -39,64 +38,44 @@ extensible
   //  Campos obligatorios
   field ( mandatory ) Title, Description, Priority;
 
-
-  //  asociacion historial
-  //  association _Historial { with draft; }
   association _Historial { create; with draft; }
 
 
   //  accion RAP para cambiar de estado
   action ( features : instance, authorization : update ) ChangeStatus parameter ZAE_CHANGE_STATUS_SC result [1] $self;
 
-  //  side effects - refresca historial despues del cambio de estado
   side effects
   {
     action ChangeStatus affects entity _Historial;
   }
 
-
-  //validacion de campos obligatorios
   validation validationIncident on save { create; update; }
 
-  //  reglas de negocio de estado
   validation validationStatus on save { create; update; field Status; }
 
-
-  // validacion de prioridades validos
   validation validationPriorityCode on save { create; update; field Priority; }
 
-  //  validar  rango de fechas
-  //  validation validateDateRange on save { create; update; field CreationDate, ChangedDate; }
   validation validateDateRange on save { create; update; field CreationDate, ChangedDate; }
 
   validation validateDateFuture on save { create; update; field CreationDate, ChangedDate; }
-  //  validation validateDateFuture on save { create; update; }
-
 
   validation validateDeleteIncident on save { delete; }
 
-  // como y en que momento se determinan los valores para los campos
-  // completar datos automaticamente al crear
   determination setIncident on modify { create; }
 
 
-  //  crear historial inicial automaticamente
   determination createInitialHistory on save { create; }
 
-  //    draft actions
   draft action Resume;
   draft action Edit;
   draft action Activate optimized;
   draft action Discard;
 
-  //  validacion antes de activar
   draft determine action Prepare
   {
-    //    validation validateMandatoryFields;
     validation validationIncident;
     validation validateDateRange;
     validation validateDateFuture;
-    //    validation validateStatusChange;
     validation validationStatus;
     validation validationPriorityCode;
   }
@@ -118,6 +97,7 @@ extensible
       LocalLastChangedBy = local_last_changed_by;
       LocalLastChangedAt = local_last_changed_at;
       LastChangedAt      = last_changed_at;
+      zzresponzag        = zzresponzag;
     }
 }
 
@@ -127,19 +107,16 @@ draft table zdt_inctd_h_sc
 
 lock dependent by _Incident
 authorization dependent by _Incident
-//total etag LastChangedAt
-//etag master LocalLastChangedAt
 {
-  //  operaciones habilitadas
   update ( features : instance );
   delete ( features : instance );
-  //  field ( readonly )  IncUuid, HisUuid;
+
   field ( numbering : managed, readonly ) HisUuid;
 
   field ( readonly ) IncUuid,
-  HisId,            //ver si realmente van estos aca
+  HisId,
   PreviousStatus,
-  NewStatus,        //ver si realmente van estos aca
+  NewStatus,
   Text,
   LocalCreatedBy,
   LocalCreatedAt,
@@ -164,171 +141,3 @@ authorization dependent by _Incident
     }
 
 }
-//{
-//  create ( authorization : global );
-//  update;
-//  delete;
-//  field ( numbering : managed, readonly ) IncUuid;
-//
-//  //  Campos solo lectura
-//  field ( readonly ) IncidentId,
-//  //  Status,       // validar si va o no este
-//  //    ChangedDate,
-//  CreationDate,
-//  LocalCreatedBy,
-//  LocalCreatedAt,
-//  LocalLastChangedBy,
-//  LocalLastChangedAt,
-//  LastChangedAt;
-//
-//  //  Campos obligatorios
-//  field ( mandatory ) Title, Description, Priority, Status;
-//  //  field ( mandatory ) Title, Description, Priority, Status, CreationDate;
-//  //  field ( mandatory ) Title, Description, Priority;
-//  //validar si realmente deberia tener esto video accion con parametros
-//  field ( features : instance ) Status;
-//  //validar si realmente deberia tener esto video accion con parametros
-//
-//  //  asociacion historial
-//  //  association _Historial { with draft; }
-//  association _Historial { create; with draft; }
-//
-//  //action ( features : instance, authorization : update ) accepInc result [1] $self;
-//  //  internal action
-//
-//  // cambio status
-//  //  action ChangeStatus result [1] $self;
-//  action ( features : instance, authorization : update ) ChangeStatus parameter ZAE_CHANGE_STATUS_SC result [1] $self;
-//  //comprobacion sobre x campo al tocar el btn de accion definida en el authorization master global e instance, tambien se puede bajar  a nivel instancia
-//  //  action ( authorization : update ) ChangeStatus result [1] $self; //ejemplo de video ver si va o no y que valores
-//
-//  //  action CloseIncident result [1] $self;
-//  //  side effects
-//  side effects
-//  {
-//    action ChangeStatus affects entity _Historial;
-//  }
-//
-//  //internal action ValidateStatus;
-//
-//  //  validar campos no esten vacios
-//  validation validationStatus on save { create; field Status; }
-//  validation validationIncident on save { create; update; }
-//
-//  //  validar  fechas ChangedDate no puede ser antes que CreationDate
-//  validation validateDateRange on save { create; field CreationDate, ChangedDate; }
-//  //  validation validateDateRange on save { create; update; }
-//  //  validation validateDateRange on save { create; field CreationDate, ChangedDate;  update; }
-//  //determination setDate on modify { create; field ChangedDate, CreationDate; }
-//
-//  validation validateDateFuture on save { create; field ChangedDate; }
-////  validation validateDateFuture on save { create; update; }
-//
-//  validation validateStatusChange on save { create; update; field Status; }
-//
-//  validation validateDeleteIncident on save { delete; }
-//
-//  // como y en que momento se determinan los valores para los campos
-//  determination setIncident on modify { create; }
-//
-//  determination createInitialHistory on save { create; }
-//
-//
-//  //  no se puede cambiar incidente a  CO o CL si todavia esta en PE
-//  //  incidentes con CN, CO o CL no se puede cambiar el status - > determinacion o validacion?
-//
-//  //  determination setStatus on modify { create; }
-//
-//  //  determination setStatus on modify { create; update; } ??
-//
-//
-//  //  no se pueden registrar incidentes en fechas futuras
-//
-//  //  determine action validateDates { validation validateDateRange; }
-//
-//  //  efecto secundario
-//
-//  //  si se actualiza incidente validar que no se eliminen valores obligatoriso
-//  //  si estado cambia a IP se debe asignar un responsable
-//
-//  //  validar  fechas ChangedDate no puede ser antes que CreationDate
-//  //  side effects
-//  //  { field CreationDate affects field ChangedDate;
-//  //    determine action validateDates executed on field CreationDate, field ChangedDate affects messages;
-//  //  }      // es una validacion o un efecto secundario?
-//
-//
-//
-//  draft action Resume;
-//  draft action Edit;
-//  draft action Activate optimized;
-//  draft action Discard;
-//
-//  draft determine action Prepare
-//  {
-//    validation validationIncident;
-//    validation validateDateRange;
-//    validation validateDateFuture;
-//    validation validateStatusChange;
-//    validation validationStatus;
-//  }
-//
-//
-//  //  Agregando mapeo
-//  mapping for zdt_inct_sc
-//    {
-//      IncUuid            = inc_uuid;
-//      Status             = status;
-//      Priority           = priority;
-//      IncidentId         = incident_id;
-//      Title              = title;
-//      Description        = description;
-//      CreationDate       = creation_date;
-//      ChangedDate        = changed_date;
-//      LocalCreatedBy     = local_created_by;
-//      LocalCreatedAt     = local_created_at;
-//      LocalLastChangedBy = local_last_changed_by;
-//      LocalLastChangedAt = local_last_changed_at;
-//      LastChangedAt      = last_changed_at;
-//    }
-//}
-//
-//define behavior for ZI_INCT_H_SC alias IncidentHis
-//persistent table zdt_inct_h_sc
-//draft table zdt_inctd_h_sc
-//
-//lock dependent by _Incident
-//authorization dependent by _Incident
-////total etag LastChangedAt
-////etag master LocalLastChangedAt
-//{
-//  update;
-//  delete;
-//  //  field ( readonly )  IncUuid, HisUuid;
-//  field ( numbering : managed, readonly ) HisUuid;
-//
-//  field ( readonly ) IncUuid,
-//  LocalCreatedBy,
-//  LocalCreatedAt,
-//  LocalLastChangedBy,
-//  LocalLastChangedAt,
-//  LastChangedAt;
-//
-//  association _Incident { with draft; }
-//
-//  mapping for zdt_inct_h_sc
-//    {
-//      IncUuid            = inc_uuid;
-//      HisUuid            = his_uuid;
-//      HisId              = his_id;
-//      PreviousStatus     = previous_status;
-//      NewStatus          = new_status;
-//      Text               = text;
-//      LocalCreatedBy     = local_created_by;
-//      LocalCreatedAt     = local_created_at;
-//      LocalLastChangedBy = local_last_changed_by;
-//      LocalLastChangedAt = local_last_changed_at;
-//      LastChangedAt      = last_changed_at;
-//    }
-//
-//}
