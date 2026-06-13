@@ -6,12 +6,11 @@
 
 @AbapCatalog.extensibility: { extensible: true,
                               dataSources: [ 'Incident' ],
-//                              dataSources: [ 'Incident' ],
                               elementSuffix: 'ZAG',
-//                              allowNewDatasources: false,
+                              allowNewDatasources: false,
                               quota: { maximumFields: 500,
-                                        maximumBytes: 50000 }//,
-//                              allowNewCompositions: true
+                                        maximumBytes: 50000 },
+                              allowNewCompositions: true
                              }
 define root view entity ZI_INCT_SC
   as select from zdt_inct_sc as Incident

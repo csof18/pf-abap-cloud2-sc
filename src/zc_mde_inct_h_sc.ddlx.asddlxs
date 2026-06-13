@@ -19,47 +19,26 @@
 @UI.deleteHidden: true
 annotate entity ZC_DT_INCT_H_SC with
 {
-  // @UI.facet: [{  id: 'History',
-  //                type: #LINEITEM_REFERENCE,
-  //                label: 'History',
-  //                position: 20,
-  //                targetElement: '_Incident'
-  //              }]
     @UI.facet: [{ id: 'History',
                   purpose: #STANDARD,
                   type: #IDENTIFICATION_REFERENCE,
                   label: 'History details',
                   position: 10//,
                 }]
-  //              { id: 'History detalles',
-  //                purpose: #STANDARD,
-  //                type: #LINEITEM_REFERENCE,
-  //                label: 'DETALLES',
-  ////                targetQualifier: 'history',
-  //                position: 10
-  //              }]
-  //              { id: 'History detalles',
-  //                purpose: #HEADER,
-  //                type: #DATAPOINT_REFERENCE,
-  //                label: 'DETALLES',
-  //                targetQualifier: 'history',
-  //                position: 10
-  //              }]
 
   @UI.identification: [{ label: 'IncUuid',position: 1 }]
   @UI.hidden: true
-  //  @Consumption.filter.hidden: true
   IncUuid;
 
   @UI.identification: [{ label: 'HisUuid',position: 2 }]
   @UI.hidden: true
   HisUuid;
 
-  @UI: {  lineItem: [{ position: 10,            //VISTA
+  @UI: {  lineItem: [{ position: 10,        
                      importance: #MEDIUM,
                      label: 'History ID' }],
-        identification: [{ position: 20,      //DETALLE
-                           label: 'History ID' }]   //para que se vea en el detalle
+        identification: [{ position: 20,      
+                           label: 'History ID' }]  
       }
   HisId;
 

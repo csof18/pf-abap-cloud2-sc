@@ -6,7 +6,6 @@
                                 value: 'IncidentId'
                               },
                       description: { type: #STANDARD,
-                                     label: 'Inceidente',   //ver porque no se ve
                                      value: 'Title' }
                      },
                      presentationVariant: [{ sortOrder: [{ by: 'IncidentId',
@@ -16,25 +15,7 @@
                                            }]
 
      }
-//@UI.headerInfo: {
-//                  typeName: 'Incident',
-//                  typeNamePlural: 'Incidents',
-//                  title: {  type: #STANDARD,
-//                  label: 'Incident Id ',
-//                            value: 'IncidentId'
-//                          },
-//                  description: { type: #STANDARD,
-//                                 label: 'Inceidente',   //ver porque no se ve
-//                                 value: 'Title' }
-//                 }
 
-
-//@UI.presentationVariant: [{ sortOrder: [{
-//                                          by: 'IncidentId',
-//                                          direction: #ASC
-//                                         }],
-//                             visualizations: [{ type: #AS_LINEITEM }]
-//                            }]
 annotate entity ZC_DT_INCT_SC with
 {
 
@@ -57,19 +38,15 @@ annotate entity ZC_DT_INCT_SC with
                    { type: #FOR_ACTION,
                      dataAction: 'ChangeStatus',
                      label: 'Change Status',
-                     position: 10 }//,
-                   //{ hidden: true }
+                     position: 10 }
                    ],
         identification: [{  position: 10 },
                          {  type: #FOR_ACTION,
                             dataAction: 'ChangeStatus',
                             label: 'Change Status',
                             position: 10
-                         }//,
-                         //{ hidden: true }
-                         ]
+                         }]
         }
-  //@UI.hidden: true
   IncUuid;
 
 
@@ -81,8 +58,8 @@ annotate entity ZC_DT_INCT_SC with
                              label: 'Incident Id' }]   //para que se vea en el detalle
         }
   @Consumption.valueHelpDefinition: [{ entity: { name: 'ZI_INCT_SC',
-                                                 element: 'IncidentId' }//,
-  //                                       useForValidation: true
+                                                 element: 'IncidentId' },
+                                         useForValidation: true
                                        }]
   IncidentId;
 
@@ -91,8 +68,6 @@ annotate entity ZC_DT_INCT_SC with
                      label: 'Title' }],
         identification: [{ position: 30 }]
       }
-  //  @Consumption.filter.hidden: true
-  //  @UI.hidden: true              //para que no se muestre tampoco en el  filtro
   Title;
 
 
@@ -102,7 +77,6 @@ annotate entity ZC_DT_INCT_SC with
          identification: [{ position: 40 }]
         }
   @Consumption.filter.hidden: true
-  //  @UI.hidden: true
   Description;
 
   @UI: {  lineItem: [{ position: 40,
@@ -113,8 +87,8 @@ annotate entity ZC_DT_INCT_SC with
         textArrangement: #TEXT_FIRST
       }
   @Consumption.valueHelpDefinition: [{ entity: { name: 'ZI_STATUS_SC',
-                                                 element: 'StatusCode' } //,
-  //                                       useForValidation: true
+                                                 element: 'StatusCode' },
+                                       useForValidation: true
   }]
   Status;
 
@@ -127,8 +101,8 @@ annotate entity ZC_DT_INCT_SC with
         textArrangement: #TEXT_FIRST
       }
   @Consumption.valueHelpDefinition: [{ entity: { name: 'ZI_PRIORITY_SC',
-                                                 element: 'PriorityCode' } //,
-  //                                         useForValidation: true
+                                                 element: 'PriorityCode' },
+                                       useForValidation: true
   }]
   Priority;
 
@@ -140,8 +114,8 @@ annotate entity ZC_DT_INCT_SC with
                             label: 'Creation Date' }]
       }
   @Consumption.valueHelpDefinition: [{ entity: { name: 'ZI_INCT_SC',
-                                                 element: 'CreationDate' }//,
-  //                                       useForValidation: true
+                                                 element: 'CreationDate' },
+                                       useForValidation: true
                                       }]
   CreationDate;
 
@@ -152,18 +126,17 @@ annotate entity ZC_DT_INCT_SC with
         identification: [{ position: 80 }]
       }
   @Consumption.valueHelpDefinition: [{ entity: { name: 'ZI_INCT_SC',
-                                                element: 'ChangedDate' }//,
-  //                                       useForValidation: true
+                                                element: 'ChangedDate' },
+                                       useForValidation: true
                                       }]
   ChangedDate;
  
   @UI: {  lineItem: [{ position: 80,
                        importance: #LOW,
                        label: 'Responsible' }],
-        identification: [{ position: 80 }]
-      }
-//  @Consumption.filter.hidden: true
-//  @UI.hidden: true
+          selectionField: [{ position: 60 }],
+          identification: [{ position: 80 }]
+       }
   zzresponzag;
 
   @Consumption.filter.hidden: true
@@ -195,109 +168,3 @@ annotate entity ZC_DT_INCT_SC with
   PriorityText;
   
 }
-//@Metadata.layer: #CORE
-//@UI.headerInfo: {
-//                  typeName: 'Incident',
-//                  typeNamePlural: 'Incidents',
-//                  title: {  type: #STANDARD,
-//                            value: 'IncidentId'
-//                          },
-//                  description: { type: #STANDARD,
-//                                 value: 'Title' }
-//                 }
-//
-//
-//@UI.presentationVariant: [{ sortOrder: [{
-//                                          by: 'IncidentId',
-//                                          direction: #ASC
-//                                         }
-//                                        ]
-//                            }]
-//annotate entity ZC_DT_INCT_SC with
-//{
-//
-//  @UI.facet: [{
-//                id: 'GeneralInformation',
-//                type: #IDENTIFICATION_REFERENCE,
-//                label: 'General Information',
-//                position: 10
-//               },
-//               {
-//                  id: 'History',
-//                  type: #LINEITEM_REFERENCE,
-//                  label: 'History',
-//                  position: 20,
-//                  targetElement: '_Historial'
-//                }]
-//  @UI.lineItem: [{
-//                   type: #FOR_ACTION,
-//                   dataAction: 'ChangeStatus',
-//                   label: 'Cambiar estado',
-//                   position: 80,
-//                   importance: #HIGH
-//                   //exclude: true        // prueba si funciona app
-//                 }]
-//  @UI.identification: [{
-//                          type: #FOR_ACTION,
-//                          dataAction: 'ChangeStatus',
-//                          label: 'Cambiar estado',
-//                          position: 80,
-//                          importance: #HIGH
-//                      }]
-//  @UI.hidden: true
-//  IncUuid;
-//
-//
-//  @UI.lineItem:       [{ label: 'Incident Id', position: 10, importance: #MEDIUM }]
-//  @UI.identification: [{ label: 'Incident Id',position: 10 }]
-//  @UI.selectionField: [{ position: 10 }]
-//  IncidentId;
-//
-//  @UI.lineItem:       [{ position: 20, importance: #LOW }]
-//  @UI.identification: [{ position: 20 }]
-//  Title;
-//
-//
-//  @UI.lineItem:       [{ position: 30, importance: #LOW }]
-//  @UI.identification: [{ position: 30 }]
-//  Description;
-//
-//  @UI.lineItem:       [{ position: 40, importance: #LOW }]
-//  @UI.identification: [{ position: 40 }]
-//  @UI.selectionField: [{ position: 20 }]
-//  Status;
-//
-//  @UI.lineItem:       [{ position: 50, importance: #LOW }]
-//  @UI.identification: [{ position: 50 }]
-//  @UI.selectionField: [{ position: 30 }]
-//  @Consumption.valueHelpDefinition: [{ entity: { name: 'ZI_PRIORITY_SC',     //averiguar que valor iria aca
-//                                                 element: 'PriorityCode' } //,
-//  //                                       useForValidation: true
-//  }]
-//  Priority;
-//
-//  @UI.lineItem:       [{ position: 60, importance: #LOW }]
-//  @UI.identification: [{ position: 60 }]
-//  @UI.selectionField: [{ position: 40 }]
-//  CreationDate;
-//
-//  @UI.lineItem:       [{ position: 70, importance: #LOW }]
-//  @UI.identification: [{ position: 70 }]
-//  @UI.selectionField: [{ position: 50 }]
-//  ChangedDate;
-//
-//  @UI.hidden: true
-//  LocalCreatedBy;
-//
-//  @UI.hidden: true
-//  LocalCreatedAt;
-//
-//  @UI.hidden: true
-//  LocalLastChangedBy;
-//
-//  @UI.hidden: true
-//  LocalLastChangedAt;
-//
-//  @UI.hidden: true
-//  LastChangedAt;
-//}

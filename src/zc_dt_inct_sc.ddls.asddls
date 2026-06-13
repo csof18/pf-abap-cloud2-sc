@@ -1,4 +1,3 @@
-//@AbapCatalog.viewEnhancementCategory: [ #NONE ]
 @AccessControl.authorizationCheck: #NOT_REQUIRED
 @EndUserText.label: 'Projection - Incidents'
 @Metadata.ignorePropagatedAnnotations: true
@@ -7,7 +6,7 @@
 @AbapCatalog.extensibility: { extensible: true,
                               dataSources: [ 'Incident' ],
                               elementSuffix: 'ZAG',
-//                              allowNewDatasources: false,
+                              allowNewDatasources: false,
                               allowNewCompositions: true,
                               quota: { maximumFields: 500,
                                        maximumBytes: 5000
@@ -16,7 +15,6 @@
 
 define root view entity ZC_DT_INCT_SC
   provider contract transactional_query
-  //provider contract transactional_interface
   as projection on ZI_INCT_SC as Incident
 {
       @Search.ranking: #HIGH

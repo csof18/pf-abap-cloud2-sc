@@ -2,4 +2,5 @@ extension implementation in class zbp_r_inct_sc unique;
 
 extend behavior for Incident
 {
+field ( features : instance ) zzresponzag;
 }
