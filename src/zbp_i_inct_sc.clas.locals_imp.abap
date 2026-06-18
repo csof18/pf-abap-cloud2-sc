@@ -32,6 +32,7 @@ CLASS lhc_Incident DEFINITION INHERITING FROM cl_abap_behavior_handler.
         status_cl TYPE zdt_status_sc-status_code VALUE 'CL',
         status_cn TYPE zdt_status_sc-status_code VALUE 'CN',
       END OF status_code.
+
     CONSTANTS:
       BEGIN OF priority_code,
         priority_h TYPE zdt_priority_sc-priority_code VALUE 'H',
