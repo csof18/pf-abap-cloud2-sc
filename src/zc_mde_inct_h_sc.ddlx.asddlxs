@@ -8,7 +8,7 @@
                                              value: 'Text' }
                             },
        presentationVariant: [{ sortOrder: [{ by: 'HisId',
-                                             direction: #DESC
+                                             direction: #ASC
                                             }],
                                 visualizations: [{ type: #AS_LINEITEM }]
                             }]

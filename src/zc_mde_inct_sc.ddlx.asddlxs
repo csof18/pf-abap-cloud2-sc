@@ -131,10 +131,7 @@ annotate entity ZC_DT_INCT_SC with
                                       }]
   ChangedDate;
 
-  @UI: {  lineItem: [{ position: 80,
-                       importance: #LOW,
-                       label: 'Responsible' }],
-          selectionField: [{ position: 60 }],
+  @UI: {  selectionField: [{ position: 60 }],
           identification: [{ position: 80 }]
        }
   zzresponzag;
