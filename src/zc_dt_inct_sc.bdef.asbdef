@@ -20,7 +20,10 @@
 
    side effects
    {
-     action ChangeStatus affects entity _Historial;
+     action ChangeStatus affects field Status,
+         field ChangedDate,
+         field zzresponzag,
+         entity _Historial;
    }
 
    use association _Historial { with draft; }

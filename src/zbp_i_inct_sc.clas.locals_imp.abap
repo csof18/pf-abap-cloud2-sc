@@ -74,6 +74,8 @@ CLASS lhc_Incident DEFINITION INHERITING FROM cl_abap_behavior_handler.
 
     METHODS validationPriorityCode FOR VALIDATE ON SAVE
       IMPORTING keys FOR Incident~validationPriorityCode.
+    METHODS validateResponsible FOR VALIDATE ON SAVE
+      IMPORTING keys FOR Incident~validateResponsible.
 
     METHODS get_next_incident_id
       RETURNING VALUE(rv_incident_id) TYPE zdt_inct_sc-incident_id.
@@ -581,6 +583,82 @@ CLASS lhc_Incident IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD validateResponsible.
+    READ ENTITIES OF zi_inct_sc IN LOCAL MODE
+      ENTITY Incident
+      FIELDS ( IncUuid Status zzresponzag )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(incidents).
+
+    IF incidents IS INITIAL.
+      RETURN.
+    ENDIF.
+
+*   valores persistidos anteriores
+    SELECT FROM zdt_inct_sc
+      FIELDS inc_uuid,
+             status,
+             zzresponzag
+      FOR ALL ENTRIES IN @incidents
+      WHERE inc_uuid = @incidents-IncUuid
+      INTO TABLE @DATA(persisted_incidents).
+
+    LOOP AT incidents INTO DATA(incident).
+
+      DATA(persisted_incident) =
+        VALUE #( persisted_incidents[
+          inc_uuid = incident-IncUuid
+        ] OPTIONAL ).
+
+
+      IF persisted_incident IS INITIAL.
+
+        IF incident-zzresponzag IS NOT INITIAL
+        AND incident-Status NE status_code-status_ip.
+          APPEND VALUE #(
+            %tky = incident-%tky
+          ) TO failed-incident.
+
+          APPEND VALUE #(
+            %tky = incident-%tky
+            %element-zzresponzag = if_abap_behv=>mk-on
+            %msg = new_message_with_text(
+              severity = if_abap_behv_message=>severity-error
+              text     = 'No es posible cambiar el responsable'
+            )
+          ) TO reported-incident.
+        ENDIF.
+
+        CONTINUE.
+      ENDIF.
+
+*      Si Responsible no cambio, sigue
+      IF incident-zzresponzag = persisted_incident-zzresponzag.
+        CONTINUE.
+      ENDIF.
+
+*      Solo cambiar Responsible cuando Status = IP
+      IF incident-Status <> status_code-status_ip.
+
+        APPEND VALUE #(
+          %tky = incident-%tky
+        ) TO failed-incident.
+
+        APPEND VALUE #(
+          %tky = incident-%tky
+          %element-zzresponzag = if_abap_behv=>mk-on
+          %msg = new_message_with_text(
+            severity = if_abap_behv_message=>severity-error
+            text     = 'El responsable solo puede modificarse al cambiar el estado a In Progress'
+          )
+        ) TO reported-incident.
+
+      ENDIF.
+
+    ENDLOOP.
+
+  ENDMETHOD.
+
   METHOD get_next_incident_id.
     SELECT SINGLE FROM zdt_inct_sc
      FIELDS MAX( incident_id )
@@ -596,5 +674,6 @@ CLASS lhc_Incident IMPLEMENTATION.
 
     rv_history_id = lv_max_his_id + 1.
   ENDMETHOD.
+
 
 ENDCLASS.
