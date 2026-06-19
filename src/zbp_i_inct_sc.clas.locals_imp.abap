@@ -646,14 +646,13 @@ CLASS lhc_Incident IMPLEMENTATION.
         ) TO failed-incident.
 
         APPEND VALUE #(
-          %tky = incident-%tky
+          %tky     = incident-%tky
           %element-zzresponzag = if_abap_behv=>mk-on
-          %msg = new_message_with_text(
-            severity = if_abap_behv_message=>severity-error
-            text     = 'El responsable solo puede modificarse al cambiar el estado a In Progress'
+          %msg     = new_message_with_text(
+          severity = if_abap_behv_message=>severity-error
+          text     = 'No es posible cambiar el responsable'
           )
         ) TO reported-incident.
-
       ENDIF.
 
     ENDLOOP.
